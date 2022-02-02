@@ -549,7 +549,7 @@ img {
 	font-family: audiowide-regular-webfont;
 	font-size: 32px;
 	font-weight: normal;
-	line-height: 32px;
+	line-height: 80px;
 	margin: 0 auto 24px;
 	padding: 0;
 	text-align: center;
@@ -560,7 +560,7 @@ img {
 	color: #ffffff;
 	display: block;
 	font-family: Arial;
-	font-size: 18px;
+	font-size: 14px;
 	font-weight: normal;
 	line-height: 24px;
 	margin: 0 auto;
@@ -582,12 +582,13 @@ img {
 	color: #a3a3a3;
 }
 #body.about .body {
-	background-color: #620031;
-	margin: 0;
-	min-height: 253px;
-	overflow: hidden;
-	padding: 0;
-	width: 100%;
+	background: url(../images/ML1.jpg);
+	/*background-color: #620031;*/
+	width: 1649px;
+	height: 325px;
+	left: 100%;
+	top: 452px;
+
 }
 #body.about .body div {
 	margin: 0 auto;
@@ -596,15 +597,16 @@ img {
 	padding: 36px 10px 35px;
 }
 #body.about .body div h2 {
-	color: #A3A3A3;
+	
+	color: #ffffff;
 	float: left;
 	font-family: audiowide-regular-webfont;
-	font-size: 23px;
+	font-size: 32px;
 	font-weight: normal;
 	line-height: 23px;
 	margin: 18px 0 26px;
 	padding: 0;
-	text-align: left;
+	text-align: center;
 	text-transform: uppercase;
 	width: 620px;
 }
@@ -618,7 +620,7 @@ img {
 	line-height: 24px;
 	margin: 0;
 	padding: 0;
-	text-align: left;
+	text-align: center;
 	width: 620px;
 }
 #body.about .body div p a {
@@ -655,10 +657,10 @@ img {
 	width: 950px;
 }
 #body.about .footer div h2 {
-	color: #A3A3A3;
+	color: #ffffff;
 	float: right;
 	font-family: audiowide-regular-webfont;
-	font-size: 23px;
+	font-size: 32px;
 	font-weight: normal;
 	line-height: 23px;
 	margin: 34px 0 24px;
@@ -672,12 +674,12 @@ img {
 	display: block;
 	float: right;
 	font-family: Arial;
-	font-size: 18px;
+	font-size: 14px;
 	font-weight: normal;
 	line-height: 24px;
 	margin: 0 auto;
 	padding: 0;
-	text-align: left;
+	text-align: justify;
 	width: 557px;
 }
 #body.about .footer div p a {
@@ -696,6 +698,7 @@ img {
 #body.about .footer div img {
 	float: left;
 	display: block;
+	height: 100%;
 	margin: 0;
 	padding: 0;
 	width: auto;
