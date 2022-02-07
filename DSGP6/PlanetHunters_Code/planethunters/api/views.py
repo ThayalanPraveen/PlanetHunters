@@ -89,3 +89,5 @@ class StarDetails(APIView):
         star = self.get_object(id)
         star.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
+
+# vs code push test
