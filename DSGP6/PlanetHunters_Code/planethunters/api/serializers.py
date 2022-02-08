@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Star, User
-
+  
 """  
 class StarSerializer(serializers.Serializer):
 
