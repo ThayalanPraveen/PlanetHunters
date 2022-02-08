@@ -4,6 +4,7 @@ from django.db import models
 class Star(models.Model):
     star_id = models.CharField(max_length=20)
     author = models.TextField()
+    valid = models.BooleanField(default=False)
 
     def __str__(self):
         return self.star_id

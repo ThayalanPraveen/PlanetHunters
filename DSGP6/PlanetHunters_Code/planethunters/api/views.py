@@ -1,4 +1,5 @@
 import imp
+import lightkurve as lk
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from .models import Star,User
@@ -12,7 +13,9 @@ from rest_framework.decorators import APIView
 
 # Create your views here.
 
+## API view to show list of stars
 class StarList(APIView):
+    
     def get(self, request):
         stars = Star.objects.all()
         serializer = StarSerializer(stars , many =True)
@@ -25,21 +28,41 @@ class StarList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+## API view to show details of a specific star
 class StarDetails(APIView):
+    
+    ## search function to find a star
+    def search_star(self,target_name,target_author):
+        if target_name == '' or target_author == '':
+            print("No Target Name input/ Author selected")
+        else:
+            try:
+                search_result = lk.search_lightcurve(target_name, author=target_author)
+                try:
+                    target = search_result.target_name
+                    return True
+                except:
+                    return False
+            except:
+                return False
+
     def get_object(self,id):
         try:
-            star = Star.objects.get(star_id = id)
+            star = Star.objects.get(id = id)
+            star.valid = self.search_star(star.star_id,star.author)
             return star
         except Star.DoesNotExist:
             return Response(status = status.HTTP_404_NOT_FOUND)
         
     def get(self,request, id): 
         star = self.get_object(id)
+        star.valid = self.search_star(star.star_id,star.author)
         serializer = StarSerializer(star)
         return Response(serializer.data)
 
     def put(self, request, id):
         star = self.get_object(id)
+        star.valid = self.search_star(star.star_id,star.author)
         serializer = StarSerializer(star, data = request.data)
         if serializer.is_valid():
             serializer.save()
@@ -51,6 +74,7 @@ class StarDetails(APIView):
         star.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
 
+## API view to show list of users
 class UserList(APIView):
     def get(self, request):
         users = User.objects.all()
@@ -64,6 +88,7 @@ class UserList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+## API view to show details of users
 class UserDetails(APIView):
     def get_object(self,id):
         try:
@@ -89,4 +114,5 @@ class UserDetails(APIView):
         user = self.get_object(id)
         user.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
+
 
