@@ -125,19 +125,25 @@ def search_star(self,target_name,target_author):
                
 
 ## filter function
-def search_filter(self,identifier,value,target_name,target_author):
+def search_filter(identifier,value,target_name,target_author):
         search_result = lk.search_lightcurve(target_name, author=target_author)
         
         if identifier == '' or value == '':
             print("Please Select Identifier & Input valid Value")
+            return 0,0
         else:
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-                value = str()
-                filter = np.where(search_result.table[identifier] == value)[0]
-                filtered = True
-                return search_result[filter] , filtered
-            else:
+            try:
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1]
+                    value = str()
+                    filter = np.where(search_result.table[identifier] == value)[0]
+                    filtered = True
+                    return search_result[filter] , filtered
+                else:
+                    filter = np.where(search_result.table[identifier] == int(value))[0]
+                    filtered = True
+                    return search_result[filter] , filtered
+            except:
                 filter = np.where(search_result.table[identifier] == int(value))[0]
                 filtered = True
                 return search_result[filter] , filtered
