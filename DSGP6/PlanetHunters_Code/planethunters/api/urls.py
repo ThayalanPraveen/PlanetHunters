@@ -9,6 +9,8 @@ urlpatterns = [
     path('users/<str:id>/', UserDetails.as_view()),
     ##path('home/',home.html) 
 ]
+
+"""  
 For Website
 
 https://www.srilankanplanethunters.com/home
@@ -28,5 +30,5 @@ dashboard/profile
 dashboard/signin
 dashboard/register
 dashboard/forgetpwd
-
+"""
 
