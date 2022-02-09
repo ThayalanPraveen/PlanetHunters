@@ -32,38 +32,35 @@ class StarList(APIView):
 ## API view to show details of a specific star
 class StarDetails(APIView):
     
-    ## search function to find a star
-    def search_star(self,target_name,target_author):
-        if target_name == '' or target_author == '':
-            print("No Target Name input/ Author selected")
-        else:
+    ## valid function to find if star is valid
+    def valid_star(self,target_name,target_author):
+        try:
+            search_result = lk.search_lightcurve(target_name, author=target_author)
             try:
-                search_result = lk.search_lightcurve(target_name, author=target_author)
-                try:
-                    target = search_result.target_name
-                    return True
-                except:
-                    return False
+                target = search_result.target_name
+                return True
             except:
                 return False
+        except:
+            return False
 
     def get_object(self,id):
         try:
             star = Star.objects.get(id = id)
-            star.valid = self.search_star(star.star_id,star.author)
+            star.valid = self.valid_star(star.star_id,star.author)
             return star
         except Star.DoesNotExist:
             return Response(status = status.HTTP_404_NOT_FOUND)
         
     def get(self,request, id): 
         star = self.get_object(id)
-        star.valid = self.search_star(star.star_id,star.author)
+        star.valid = self.valid_star(star.star_id,star.author)
         serializer = StarSerializer(star)
         return Response(serializer.data)
 
     def put(self, request, id):
         star = self.get_object(id)
-        star.valid = self.search_star(star.star_id,star.author)
+        star.valid = self.valid_star(star.star_id,star.author)
         serializer = StarSerializer(star, data = request.data)
         if serializer.is_valid():
             serializer.save()
@@ -117,20 +114,22 @@ class UserDetails(APIView):
         return Response(status = status.HTTP_204_NO_CONTENT)
 
 ## Search function
-def search_star(self,target_name,target_author):
-        if target_name == '' or target_author == '':
-            print("No Target Name input/ Author selected")
-        else:
-            search_result = lk.search_lightcurve(target_name, author=target_author)
-               
+def search_star(target_name,target_author):
+    if target_name == '' or target_author == '':
+        print("No Target Name input/ Author selected")
+        return False
+    else:
+        search_result = lk.search_lightcurve(target_name, author=target_author)
+        filtered = False
+        return search_result , filtered , 0
 
-## filter function
+## search filter function
 def search_filter(identifier,value,target_name,target_author):
         search_result = lk.search_lightcurve(target_name, author=target_author)
         
         if identifier == '' or value == '':
             print("Please Select Identifier & Input valid Value")
-            return 0,0
+            return 0,0,0
         else:
             try:
                 if value.startswith('"') and value.endswith('"'):
@@ -138,14 +137,32 @@ def search_filter(identifier,value,target_name,target_author):
                     value = str()
                     filter = np.where(search_result.table[identifier] == value)[0]
                     filtered = True
-                    return search_result[filter] , filtered
+                    return search_result , filtered , filter
                 else:
                     filter = np.where(search_result.table[identifier] == int(value))[0]
                     filtered = True
-                    return search_result[filter] , filtered
+                    return search_result , filtered , filter
             except:
                 filter = np.where(search_result.table[identifier] == int(value))[0]
                 filtered = True
-                return search_result[filter] , filtered
-            
+                return search_result , filtered , filter
+
+## select star function
+def select_star(hash_id,search_result,filtered,filter):
+    if hash_id == '':
+        print("Input valid #")
+        return 0,0,0
+    else:
+        if filtered == True:
+            lc = search_result[filter[int(hash_id)]].download()
+        else:
+            lc = search_result[int(hash_id)].download()
+        return lc
+
+## show search results function        
+def show_search_results(search_results,filtered,filter):
+    if filtered == False :
+        return search_results
+    else:
+        return search_results[filter]           
         

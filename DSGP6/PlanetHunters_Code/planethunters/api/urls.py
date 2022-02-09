@@ -24,5 +24,3 @@ urlpatterns = [
     ##path('dashboard/forgetpwd/',forgetpwd.html)
 
 ]
-
-
