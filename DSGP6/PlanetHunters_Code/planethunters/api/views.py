@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import APIView
+import numpy as np
 
 
 # Create your views here.
@@ -115,4 +116,30 @@ class UserDetails(APIView):
         user.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
 
+## Search function
+def search_star(self,target_name,target_author):
+        if target_name == '' or target_author == '':
+            print("No Target Name input/ Author selected")
+        else:
+            search_result = lk.search_lightcurve(target_name, author=target_author)
+               
 
+## filter function
+def search_filter(self,identifier,value,target_name,target_author):
+        search_result = lk.search_lightcurve(target_name, author=target_author)
+        
+        if identifier == '' or value == '':
+            print("Please Select Identifier & Input valid Value")
+        else:
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+                value = str()
+                filter = np.where(search_result.table[identifier] == value)[0]
+                filtered = True
+                return search_result[filter] , filtered
+            else:
+                filter = np.where(search_result.table[identifier] == int(value))[0]
+                filtered = True
+                return search_result[filter] , filtered
+            
+        
