@@ -165,4 +165,9 @@ def show_search_results(search_results,filtered,filter):
         return search_results
     else:
         return search_results[filter]           
-        
+
+## Reset function
+def reset_search(target_name,target_author):
+    search_result = lk.search_lightcurve(target_name, author=target_author)
+    filtered = False
+    return search_result, filtered , 0
