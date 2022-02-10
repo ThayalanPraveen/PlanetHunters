@@ -46,7 +46,7 @@ def search_filter(identifier,value,target_name,target_author):
 ## select star function
 def select_star(hash_id,search_result,filtered,filter):
     if hash_id == '':
-        print("Input valid #")
+        print("Input valid #") ## finish validation
         return 0,0,0
     else:
         if filtered == True:
@@ -62,10 +62,11 @@ def show_search_results(search_results,filtered,filter):
     else:
         return search_results[filter]
 
-out = search_star("TIC 145241359","QLP") ## working search function
-filter = search_filter("year","2018","TIC 145241359","QLP") ## working filter function
+out = search_star("TIC 99180739","SPOC") ## working search function
+print(out)
+filter = search_filter("year","2018","TIC 99180739","SPOC") ## working filter function
 print(show_search_results(filter[0],filter[1],filter[2])) ## working show function
-filter2 = search_filter("year","2019","TIC 145241359","QLP") ## working filter function
+filter2 = search_filter("year","2019","TIC 99180739","SPOC") ## working filter function
 print(show_search_results(filter2[0],filter2[1],filter2[2])) ## working show function
 selected_star = select_star(0,filter2[0],filter2[1],filter2[2]) ## working select function
 print(selected_star)
