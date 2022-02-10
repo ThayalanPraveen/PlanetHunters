@@ -1,4 +1,55 @@
 /* Website template by freewebsitetemplates.com */
+
+.btn1 {
+	background-color: #024972;
+	border-radius: 4px;
+	border: none;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	position: absolute;
+	object-position: 50%;
+	margin-top: 15%;
+	left: 43%;
+	
+}
+.btn1:hover {
+   border-radius: 4px;
+   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+   background-color: rgb(0, 153, 255);
+   color: black;
+}
+
+.btn2 {
+	background-color: #024972;
+	border-radius: 4px;
+	border: none;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	position: absolute;
+	margin-top: 16%;
+	left: 58%;
+	
+}
+.btn2:hover {
+   border-radius: 4px;
+   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+   background-color: rgb(0, 153, 255);
+   color: black;
+}
 body {
 	margin: 0;
 	padding: 0;
@@ -218,26 +269,28 @@ img {
 	z-index: 60;
 }
 #body.home .header div a.more {
-	background-color: #000000;
-	color: #a3a3a3;
-	display: block;
-	float: right;
-	font-family: Arial;
-	font-size: 18px;
-	font-weight: normal;
-	height: 49px;
-	line-height: 49px;
-	margin: 0 200px 0 0;
-	padding: 0;
+	background-color: #011a29;
+	border-radius: 4px;
+	border: none;
+	color: white;
+	padding: 15px 32px;
 	text-align: center;
-	text-transform: uppercase;
-	position: relative;
-	width: 180px;
-	z-index: 55;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	position: absolute;
+	object-position: 50%;
+	margin-top: 45%;
+	left: 73%;
 }
 #body.home .header div a.more:hover {
-	background-color: #ab000b;
-	color: #ffffff;
+   border-radius: 4px;
+   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+   background-color: rgb(0, 119, 197);
+   color: #011a29;
 }
 #body.home .header div h3 {
 	background: url("../images/bg-transparent1.png") repeat;
@@ -1413,3 +1466,100 @@ img {
 #wix a img {
 	width: 100%;
 }
+body {
+	background: #13171c;
+	font-family: Assistant, sans-serif;
+	display:ruby-text-container
+	min-height: 90vh;
+  }
+  .login {
+	color: white;
+	background: #136a8a;
+	background: 
+	  -webkit-linear-gradient(to right, #267871, #136a8a);
+	background: 
+	  linear-gradient(to right, #267871, #136a8a);
+	margin: auto;
+	box-shadow: 
+	  0px 2px 10px rgba(0,0,0,0.2), 
+	  0px 10px 20px rgba(0,0,0,0.3), 
+	  0px 30px 60px 1px rgba(0,0,0,0.5);
+	border-radius: 8px;
+	padding: 50px;
+  }
+  .login .head {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  .login .head .company {
+	font-size: 2.2em;
+  }
+  .login .msg {
+	text-align: center;
+  }
+  .login .form input[type=text].text {
+	border: none;
+	background: none;
+	box-shadow: 0px 2px 0px 0px white;
+	width: 100%;
+	color: white;
+	font-size: 1em;
+	outline: none;
+  }
+  .login .form .text::placeholder {
+	color: #D3D3D3;
+  }
+  .login .form input[type=password].password {
+	border: none;
+	background: none;
+	box-shadow: 0px 2px 0px 0px white;
+	width: 100%;
+	color: white;
+	font-size: 1em;
+	outline: none;
+	margin-bottom: 20px;
+	margin-top: 20px;
+  }
+  .login .form .password::placeholder {
+	color: #D3D3D3;
+  }
+  .login .form .btn-login {
+	background: none;
+	text-decoration: none;
+	color: white;
+	box-shadow: 0px 0px 0px 2px white;
+	border-radius: 3px;
+	padding: 5px 2em;
+	transition: 0.5s;
+  }
+  .login .form .btn-login:hover {
+	background: white;
+	color: dimgray;
+	transition: 0.5s;
+  }
+  .login .forgot {
+	text-decoration: none;
+	color: white;
+	float: right;
+  }
+  footer {
+	position: absolute;
+	color: #136a8a;
+	bottom: 10px;
+	padding-left: 20px;
+  }
+  footer p {
+	display: inline;
+  }
+  footer a {
+	color: green;
+	text-decoration: none;
+  }
+  footer a:hover {
+	text-decoration: underline;
+  }
+  footer .heart {
+	color: #B22222;
+	font-size: 1.5em
+  }
