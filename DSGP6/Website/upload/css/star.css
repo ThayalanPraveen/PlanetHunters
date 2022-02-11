@@ -13,11 +13,17 @@ body {
   left: 0;
   width: 100%;
   height: 120%;
-  transform: rotate(-45deg);
+  transform: rotate(0deg);
 }
-
+@keyframes mymove {
+  0% {--star-color: rgb(233, 64, 182);}
+  25% {--star-color: rgb(138, 37, 233);}
+  50% {--star-color: rgb(68, 142, 240);}
+  75% {--star-color: rgb(68, 240, 154);}
+  100% {--star-color: rgb(233, 212, 22);}
+}
 .star {
-  --star-color: rgb(76, 167, 241);
+  --star-color: rgb(57, 188, 211);
   --star-tail-length: 6em;
   --star-tail-height: 2px;
   --star-width: calc(var(--star-tail-length) / 6);
@@ -33,7 +39,7 @@ body {
   border-radius: 50%;
   filter: drop-shadow(0 0 6px currentColor);
   transform: translate3d(104em, 0, 0);
-  animation: fall var(--fall-duration) var(--fall-delay) linear infinite, tail-fade var(--tail-fade-duration) var(--fall-delay) ease-out infinite;
+  animation: mymove 3s infinite , fall var(--fall-duration) var(--fall-delay) linear infinite, tail-fade var(--tail-fade-duration) var(--fall-delay) ease-out infinite;
 }
 @media screen and (max-width: 750px) {
   .star {
@@ -352,7 +358,7 @@ body {
   animation: blink 2s linear infinite;
 }
 .star::before {
-  transform: rotate(45deg);
+  transform: rotate(0deg);
 }
 .star::after {
   transform: rotate(-45deg);
@@ -360,7 +366,8 @@ body {
 
 @keyframes fall {
   to {
-    transform: translate3d(-30em, 0, 0);
+    transform: translate3d(-60em, 0, 0);
+   
   }
 }
 @keyframes tail-fade {
