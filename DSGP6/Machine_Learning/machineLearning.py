@@ -1,4 +1,8 @@
 import pandas as pd
 
-df = pd.read_csv (r'Dataset.csv')
-print (df)
+data = pd.read_csv(r'/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Machine_Learning/Dataset.csv')
+##data = pd.read_csv(r'/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Machine_Learning/Dataset.csv') Kanishka dataset location
+##data = pd.read_csv(r'/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Machine_Learning/Dataset.csv') Hamdaan dataset location
+##data = pd.read_csv(r'/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Machine_Learning/Dataset.csv') Maryam dataset location
+print(data)
+
