@@ -4,24 +4,24 @@ import numpy as np
 import lightkurve as lk
 
 ## Search function
-def search_star(target_name,target_author):
-    if target_name == '' or target_author == '':
-        print("No Target Name input/ Author selected")
+def search_star(target_name):
+    if target_name == '':
+        print("No Target Name input")
         return False
     else:
-        search_result = lk.search_lightcurve(target_name, author=target_author)
+        search_result = lk.search_lightcurve(target_name)
         filtered = False
         return search_result , filtered , 0
 
 ## Reset function
-def reset_search(target_name,target_author):
-    search_result = lk.search_lightcurve(target_name, author=target_author)
+def reset_search(target_name):
+    search_result = lk.search_lightcurve(target_name)
     filtered = False
     return search_result, filtered , 0
 
 ## search filter function
-def search_filter(identifier,value,target_name,target_author):
-        search_result = lk.search_lightcurve(target_name, author=target_author)
+def search_filter(identifier,value,target_name):
+        search_result = lk.search_lightcurve(target_name)
         
         if identifier == '' or value == '':
             print("Please Select Identifier & Input valid Value")
@@ -62,12 +62,8 @@ def show_search_results(search_results,filtered,filter):
     else:
         return search_results[filter]
 
-out = search_star("TIC 99180739","SPOC") ## working search function
+out = search_star("TIC 441420236") ## working search function
 print(out)
-filter = search_filter("year","2018","TIC 99180739","SPOC") ## working filter function
-print(show_search_results(filter[0],filter[1],filter[2])) ## working show function
-filter2 = search_filter("year","2019","TIC 99180739","SPOC") ## working filter function
-print(show_search_results(filter2[0],filter2[1],filter2[2])) ## working show function
-selected_star = select_star(0,filter2[0],filter2[1],filter2[2]) ## working select function
-print(selected_star)
+
+
 
