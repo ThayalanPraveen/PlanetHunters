@@ -9,3 +9,4 @@ print(data)
 ## statistics of dataset columns
 data_stats = data.describe()
 print(data_stats) 
+
