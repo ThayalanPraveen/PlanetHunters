@@ -49,38 +49,38 @@ body {
 .star:nth-child(1) {
   --star-tail-length: 5.05em;
   --top-offset: 31vh;
-  --fall-duration: 11.218s;
-  --fall-delay: 4.571s;
+  --fall-duration: 15.218s;
+  --fall-delay: 0s;
 }
 .star:nth-child(2) {
   --star-tail-length: 5.37em;
   --top-offset: 51.45vh;
-  --fall-duration: 11.044s;
-  --fall-delay: 2.104s;
+  --fall-duration: 17.044s;
+  --fall-delay: 4s;
 }
 .star:nth-child(3) {
   --star-tail-length: 6.72em;
   --top-offset: 37.59vh;
-  --fall-duration: 7.551s;
-  --fall-delay: 8.728s;
+  --fall-duration: 13.551s;
+  --fall-delay: 7s;
 }
 .star:nth-child(4) {
   --star-tail-length: 5.35em;
   --top-offset: 6.54vh;
-  --fall-duration: 6.611s;
-  --fall-delay: 3.163s;
+  --fall-duration: 16.611s;
+  --fall-delay: 10s;
 }
 .star:nth-child(5) {
   --star-tail-length: 5.75em;
   --top-offset: 68.05vh;
-  --fall-duration: 7.154s;
-  --fall-delay: 0.816s;
+  --fall-duration: 17.154s;
+  --fall-delay: 12s;
 }
 .star:nth-child(6) {
   --star-tail-length: 5.71em;
   --top-offset: 78.35vh;
-  --fall-duration: 6.173s;
-  --fall-delay: 8.694s;
+  --fall-duration: 16.173s;
+  --fall-delay: 14s;
 }
 .star:nth-child(7) {
   --star-tail-length: 6.07em;
