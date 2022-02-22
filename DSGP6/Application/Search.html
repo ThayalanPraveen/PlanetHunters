@@ -20,11 +20,13 @@
             <input type="text" placeholder="What are you looking for?" />
           </div>
           <div class="input-field second-wrap">
-            <button class="btn-search" type="button">SEARCH</button>
+            <button onclick="Javascript:addTable()" class="btn-search" type="button" >SEARCH</button>
           </div>
         </div>
         <span class="info">eg: TIC 12526373, QLP 12536373, SPOC 16278393</span>
       </form>
+      <div id="results"></div>
+      
       <form identifier="select" style="visibility: inherit;">
         <div class="inner-form" >
           <div class="input-field first-wrap">
@@ -39,12 +41,13 @@
             <button class="btn-search" type="button">SELECT</button>
           </div>
         </div>
-        <span class="info">eg: TIC 12526373, QLP 12536373, SPOC 16278393</span>
+        <span class="info">eg: 0,1,2,3,</span>
       </form>
       </div>
       
       
      
     <script src="JS/extention/choices.js"></script>
+    <script src="JS/extention/table.js"></script>
   </body><!-- This templates was made by Colorlib (https://colorlib.com) -->
 </html>

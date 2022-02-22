@@ -1,3 +1,4 @@
+import sys
 ## file to test lightkurve functions
 
 import numpy as np
@@ -63,7 +64,8 @@ def show_search_results(search_results,filtered,filter):
         return search_results[filter]
 
 out = search_star("TIC 441420236") ## working search function
-print(out)
-
+search = select_star(0,out,filtered=False,filter= 0)
+out2 = show_search_results(search,False,0)
+print(out2[0])
 
 
