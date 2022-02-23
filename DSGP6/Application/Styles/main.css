@@ -9,6 +9,20 @@ html {
 /**
  * Remove the margin in all browsers (opinionated).
  */
+ textarea {
+  resize: none;
+}
+#results {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: justify;
+      justify-content: space-between;
+  -ms-flex-align: center;
+      align-items: center;
+}
 body {
   margin: 0;
 }
