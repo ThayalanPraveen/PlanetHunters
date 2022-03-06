@@ -15,6 +15,19 @@ def home(request):
     return render(request,"users/home.html")
 
 def login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        pass1 = request.POST.get('pass1')
+        
+        user = authenticate(request,username=email, password=pass1)
+        
+        if user is not None:
+            login(request, user)
+            # messages.success(request, "Logged In Sucessfully!!")
+            return render(request, "/index.html")
+        else:
+            messages.error(request, "Bad Credentials!!")
+            return render(request,"registration/login.html")
 
     return render(request,"registration/login.html")
 
@@ -33,11 +46,11 @@ def signup(request):
             messages.error(request, "Passwords didn't matched!!")
             return redirect('home')
         
-        myuser = User.objects.create_user(email, pass1)
+        myuser = User.objects.create_user(username=email, password=pass1)
         # myuser.is_active = False
         myuser.is_active = False
         myuser.save()
-        messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
+        messages.success(request, "Your Account has been created succesfully!!")
         
         return redirect('login')
 
