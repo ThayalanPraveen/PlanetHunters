@@ -1,0 +1,806 @@
+
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Animated Form</title>
+  <head>
+	<meta charset="UTF-8">
+	<title>AnimaForm</title>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <script>
+    const switchers = [...document.querySelectorAll('.switcher')]
+
+    switchers.forEach(item => {
+        item.addEventListener('click', function() {
+            switchers.forEach(item => item.parentElement.classList.remove('is-active'))
+            this.parentElement.classList.add('is-active')
+        })
+    })
+</script>
+<style>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Roboto, -apple-system, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
+        background: #111421;
+    }
+    #loginlink {
+        border: none;
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        padding-right: 15px;
+        padding-left: 15px;
+        font-size: 16px;
+        line-height: 40px;
+        color: #F0FFFF;
+    }
+    .forms-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .section-title {
+        font-size: 32px;
+        letter-spacing: 1px;
+        color: #fff;
+    }
+
+    .forms {
+        display: flex;
+        align-items: center;
+        margin-top: 30px;
+
+    }
+
+    .form-wrapper {
+        animation: hideLayer .3s ease-out forwards;
+    }
+
+    .form-wrapper.is-active {
+        animation: showLayer .3s ease-in forwards;
+    }
+
+    @keyframes showLayer {
+        50% {
+            z-index: 1;
+        }
+        100% {
+            z-index: 1;
+        }
+    }
+
+    @keyframes hideLayer {
+        0% {
+            z-index: 1;
+        }
+        49.999% {
+            z-index: 1;
+        }
+    }
+
+    .switcher {
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        margin-right: auto;
+        margin-left: auto;
+        padding: 0;
+        text-transform: uppercase;
+        font-family: inherit;
+        font-size: 16px;
+        letter-spacing: .5px;
+        color: #999;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        transform: translateX(0);
+        transition: all .3s ease-out;
+    }
+
+    .form-wrapper.is-active .switcher-login {
+        color: #fff;
+        transform: translateX(0px);
+    }
+
+    .form-wrapper.is-active .switcher-signup {
+        color: #fff;
+        transform: translateX(0px);
+    }
+
+    .underline {
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        overflow: hidden;
+        pointer-events: none;
+        width: 100%;
+        height: 2px;
+    }
+
+    .underline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: inherit;
+        display: block;
+        width: inherit;
+        height: inherit;
+        background-color: currentColor;
+        transition: transform .2s ease-out;
+    }
+
+    .switcher-login .underline::before {
+        transform: translateX(101%);
+    }
+
+    .switcher-signup .underline::before {
+        transform: translateX(-101%);
+    }
+
+    .form-wrapper.is-active .underline::before {
+        transform: translateX(0);
+    }
+
+    .form {
+        overflow: hidden;
+        min-width: 260px;
+        margin-top: 50px;
+        border-radius: 5px;
+        transform-origin: top;
+    }
+
+    .form-login {
+        animation: hideLogin .3s ease-out forwards;
+    }
+
+    .form-wrapper.is-active .form-login {
+        animation: showLogin .3s ease-in forwards;
+    }
+
+    @keyframes showLogin {
+        0% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+        }
+        50% {
+            transform: translate(0, 0);
+        }
+        100% {
+            
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+        }
+    }
+
+    @keyframes hideLogin {
+        0% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(35%, -20px);
+        }
+        50% {
+            transform: translate(0, 0);
+        }
+        100% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(40%, 10px);
+        }
+    }
+
+    .form-signup {
+        animation: hideSignup .3s ease-out forwards;
+    }
+
+    .form-wrapper.is-active .form-signup {
+        animation: showSignup .3s ease-in forwards;
+    }
+
+    @keyframes showSignup {
+        0% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(-40%, 10px) scaleY(.8);
+        }
+        50% {
+            transform: translate(0, 0) scaleY(.8);
+        }
+        100% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(-35%, -20px) scaleY(1);
+        }
+    }
+
+    @keyframes hideSignup {
+        0% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(-35%, -20px) scaleY(1);
+        }
+        50% {
+            transform: translate(0, 0) scaleY(.8);
+        }
+        100% {
+            background-color: rgba(255,255,255,0.13);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+            transform: translate(-40%, 10px) scaleY(.8);
+        }
+    }
+
+    .form fieldset {
+        position: relative;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        transition: all .3s ease-out;
+    }
+
+    .form-login fieldset {
+        transform: translateX(-50%);
+    }
+
+    .form-signup fieldset {
+        transform: translateX(50%);
+    }
+
+    .form-wrapper.is-active fieldset {
+        opacity: 1;
+        transform: translateX(0);
+        transition: opacity .4s ease-in, transform .35s ease-in;
+    }
+
+    .form legend {
+        position: absolute;
+        overflow: hidden;
+        width: 1px;
+        height: 1px;
+        clip: rect(0 0 0 0);
+    }
+
+    .input-block {
+        margin-bottom: 20px;
+    }
+
+    .input-block label {
+        font-size: 14px;
+    color: #c3d3d3;
+    }
+
+    .input-block input {
+        border: none;
+        border-radius: 10px;
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        padding-right: 15px;
+        padding-left: 15px;
+        font-size: 16px;
+        line-height: 40px;
+        color: #3b4465;
+        background-color: rgba(255, 255, 255, 0.337);
+
+
+    }
+
+    input:focus{
+        border: none;
+        outline-width: 0;
+    }
+
+    .form [type='submit'] {
+        opacity: 0;
+        display: block;
+        min-width: 120px;
+        margin: 30px auto 10px;
+        font-size: 18px;
+        line-height: 40px;
+        border-radius: 25px;
+        border: none;
+        transition: all .3s ease-out;
+    }
+
+    .form-wrapper.is-active .form [type='submit'] {
+        opacity: 1;
+        transform: translateX(0);
+        transition: all .4s ease-in;
+    }
+
+    .btn-login {
+        color: #fbfdff;
+        background: #45e291;
+        transform: translateX(-30%);
+    }
+    .btn-login:hover {
+        background: rgb(0, 153, 255);
+        color: rgb(255, 255, 255);
+        transform: translateX(-30%);
+    }
+
+    .btn-signup {
+        color: #fbfdff;
+        background: #45e291;
+        transform: translateX(30%);
+    }
+    .btn-signup:hover {
+        background-color: rgb(0, 153, 255);
+        color: rgb(255, 255, 255);
+    }
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: radial-gradient(ellipse at bottom, #0d1d31 0%, #0c0d13 100%);
+        overflow: hidden;
+      }
+      
+      .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 120%;
+        transform: rotate(-45deg);
+      }
+      @keyframes mymove {
+        0% {--star-color: rgb(255, 15, 15);}
+        25% {--star-color: rgb(245, 184, 16);}
+        50% {--star-color: rgb(255, 251, 16);}
+        75% {--star-color: rgb(255, 255, 255);}
+        100% {--star-color: rgb(255, 255, 255);}
+      }
+      .star {
+        --star-color: rgb(57, 188, 211);
+        --star-tail-length: 6em;
+        --star-tail-height: 2px;
+        --star-width: calc(var(--star-tail-length) / 6);
+        --fall-duration: 9s;
+        --tail-fade-duration: var(--fall-duration);
+        position: absolute;
+        top: var(--top-offset);
+        left: 0;
+        width: var(--star-tail-length);
+        height: var(--star-tail-height);
+        color: var(--star-color);
+        background: linear-gradient(45deg, currentColor, transparent);
+        border-radius: 50%;
+        filter: drop-shadow(0 0 6px currentColor);
+        transform: translate3d(104em, 0, 0);
+        animation: mymove 3s infinite , fall var(--fall-duration) var(--fall-delay) linear infinite, tail-fade var(--tail-fade-duration) var(--fall-delay) ease-out infinite;
+      }
+      @media screen and (max-width: 750px) {
+        .star {
+          animation: fall var(--fall-duration) var(--fall-delay) linear infinite;
+        }
+      }
+      .star:nth-child(1) {
+        --star-tail-length: 5.05em;
+        --top-offset: 31vh;
+        --fall-duration: 15.218s;
+        --fall-delay: 0s;
+      }
+      .star:nth-child(2) {
+        --star-tail-length: 5.37em;
+        --top-offset: 51.45vh;
+        --fall-duration: 17.044s;
+        --fall-delay: 4s;
+      }
+      .star:nth-child(3) {
+        --star-tail-length: 6.72em;
+        --top-offset: 37.59vh;
+        --fall-duration: 13.551s;
+        --fall-delay: 7s;
+      }
+      .star:nth-child(4) {
+        --star-tail-length: 5.35em;
+        --top-offset: 6.54vh;
+        --fall-duration: 16.611s;
+        --fall-delay: 10s;
+      }
+      .star:nth-child(5) {
+        --star-tail-length: 5.75em;
+        --top-offset: 68.05vh;
+        --fall-duration: 17.154s;
+        --fall-delay: 12s;
+      }
+      .star:nth-child(6) {
+        --star-tail-length: 5.71em;
+        --top-offset: 78.35vh;
+        --fall-duration: 16.173s;
+        --fall-delay: 14s;
+      }
+      .star:nth-child(7) {
+        --star-tail-length: 6.07em;
+        --top-offset: 52.87vh;
+        --fall-duration: 6.494s;
+        --fall-delay: 3.766s;
+      }
+      .star:nth-child(8) {
+        --star-tail-length: 5.69em;
+        --top-offset: 14.51vh;
+        --fall-duration: 11.893s;
+        --fall-delay: 4.388s;
+      }
+      .star:nth-child(9) {
+        --star-tail-length: 6.73em;
+        --top-offset: 97.43vh;
+        --fall-duration: 7.106s;
+        --fall-delay: 5.248s;
+      }
+      .star:nth-child(10) {
+        --star-tail-length: 6.42em;
+        --top-offset: 0.18vh;
+        --fall-duration: 8.883s;
+        --fall-delay: 9.985s;
+      }
+      .star:nth-child(11) {
+        --star-tail-length: 6.21em;
+        --top-offset: 20.15vh;
+        --fall-duration: 8.607s;
+        --fall-delay: 1.625s;
+      }
+      .star:nth-child(12) {
+        --star-tail-length: 7.43em;
+        --top-offset: 39.87vh;
+        --fall-duration: 7.587s;
+        --fall-delay: 3.352s;
+      }
+      .star:nth-child(13) {
+        --star-tail-length: 5.83em;
+        --top-offset: 70.57vh;
+        --fall-duration: 9.886s;
+        --fall-delay: 6.444s;
+      }
+      .star:nth-child(14) {
+        --star-tail-length: 6.49em;
+        --top-offset: 18.65vh;
+        --fall-duration: 11.971s;
+        --fall-delay: 7.266s;
+      }
+      .star:nth-child(15) {
+        --star-tail-length: 6.91em;
+        --top-offset: 86.25vh;
+        --fall-duration: 8.348s;
+        --fall-delay: 0.008s;
+      }
+      .star:nth-child(16) {
+        --star-tail-length: 5.31em;
+        --top-offset: 5.13vh;
+        --fall-duration: 9.602s;
+        --fall-delay: 1.128s;
+      }
+      .star:nth-child(17) {
+        --star-tail-length: 5.6em;
+        --top-offset: 19.7vh;
+        --fall-duration: 9.963s;
+        --fall-delay: 2.438s;
+      }
+      .star:nth-child(18) {
+        --star-tail-length: 5.05em;
+        --top-offset: 87.16vh;
+        --fall-duration: 11.264s;
+        --fall-delay: 8.992s;
+      }
+      .star:nth-child(19) {
+        --star-tail-length: 6.39em;
+        --top-offset: 3.78vh;
+        --fall-duration: 6.49s;
+        --fall-delay: 0.037s;
+      }
+      .star:nth-child(20) {
+        --star-tail-length: 5.74em;
+        --top-offset: 84.85vh;
+        --fall-duration: 9.594s;
+        --fall-delay: 0.518s;
+      }
+      .star:nth-child(21) {
+        --star-tail-length: 5.72em;
+        --top-offset: 99.02vh;
+        --fall-duration: 10.648s;
+        --fall-delay: 4.331s;
+      }
+      .star:nth-child(22) {
+        --star-tail-length: 5em;
+        --top-offset: 28.34vh;
+        --fall-duration: 11.31s;
+        --fall-delay: 8.107s;
+      }
+      .star:nth-child(23) {
+        --star-tail-length: 6.48em;
+        --top-offset: 99.15vh;
+        --fall-duration: 8.018s;
+        --fall-delay: 1.77s;
+      }
+      .star:nth-child(24) {
+        --star-tail-length: 6.47em;
+        --top-offset: 22.88vh;
+        --fall-duration: 10.198s;
+        --fall-delay: 4.433s;
+      }
+      .star:nth-child(25) {
+        --star-tail-length: 6em;
+        --top-offset: 33.37vh;
+        --fall-duration: 7.7s;
+        --fall-delay: 0.961s;
+      }
+      .star:nth-child(26) {
+        --star-tail-length: 5.07em;
+        --top-offset: 80.47vh;
+        --fall-duration: 11.124s;
+        --fall-delay: 6.003s;
+      }
+      .star:nth-child(27) {
+        --star-tail-length: 5.21em;
+        --top-offset: 45.54vh;
+        --fall-duration: 10.004s;
+        --fall-delay: 8.069s;
+      }
+      .star:nth-child(28) {
+        --star-tail-length: 5.75em;
+        --top-offset: 4.1vh;
+        --fall-duration: 10.848s;
+        --fall-delay: 4.789s;
+      }
+      .star:nth-child(29) {
+        --star-tail-length: 6.63em;
+        --top-offset: 59.13vh;
+        --fall-duration: 11.561s;
+        --fall-delay: 1.297s;
+      }
+      .star:nth-child(30) {
+        --star-tail-length: 5.97em;
+        --top-offset: 44.96vh;
+        --fall-duration: 10.527s;
+        --fall-delay: 6.607s;
+      }
+      .star:nth-child(31) {
+        --star-tail-length: 5.32em;
+        --top-offset: 49.71vh;
+        --fall-duration: 6.209s;
+        --fall-delay: 9.66s;
+      }
+      .star:nth-child(32) {
+        --star-tail-length: 5.25em;
+        --top-offset: 48.4vh;
+        --fall-duration: 10.136s;
+        --fall-delay: 6.963s;
+      }
+      .star:nth-child(33) {
+        --star-tail-length: 7.16em;
+        --top-offset: 60.33vh;
+        --fall-duration: 8.873s;
+        --fall-delay: 7.325s;
+      }
+      .star:nth-child(34) {
+        --star-tail-length: 6.39em;
+        --top-offset: 62.33vh;
+        --fall-duration: 8.121s;
+        --fall-delay: 1.912s;
+      }
+      .star:nth-child(35) {
+        --star-tail-length: 5.38em;
+        --top-offset: 17.94vh;
+        --fall-duration: 10.523s;
+        --fall-delay: 2.029s;
+      }
+      .star:nth-child(36) {
+        --star-tail-length: 6.12em;
+        --top-offset: 38.76vh;
+        --fall-duration: 11.533s;
+        --fall-delay: 6.144s;
+      }
+      .star:nth-child(37) {
+        --star-tail-length: 6.5em;
+        --top-offset: 42.86vh;
+        --fall-duration: 8.832s;
+        --fall-delay: 4.493s;
+      }
+      .star:nth-child(38) {
+        --star-tail-length: 5.48em;
+        --top-offset: 38.31vh;
+        --fall-duration: 9.214s;
+        --fall-delay: 5.59s;
+      }
+      .star:nth-child(39) {
+        --star-tail-length: 6.46em;
+        --top-offset: 16.24vh;
+        --fall-duration: 6.95s;
+        --fall-delay: 1.442s;
+      }
+      .star:nth-child(40) {
+        --star-tail-length: 6.77em;
+        --top-offset: 59.42vh;
+        --fall-duration: 10.566s;
+        --fall-delay: 4.264s;
+      }
+      .star:nth-child(41) {
+        --star-tail-length: 5.3em;
+        --top-offset: 57.07vh;
+        --fall-duration: 8.744s;
+        --fall-delay: 1.15s;
+      }
+      .star:nth-child(42) {
+        --star-tail-length: 7.36em;
+        --top-offset: 27.23vh;
+        --fall-duration: 9.669s;
+        --fall-delay: 5.493s;
+      }
+      .star:nth-child(43) {
+        --star-tail-length: 5.67em;
+        --top-offset: 15.12vh;
+        --fall-duration: 8.966s;
+        --fall-delay: 1.113s;
+      }
+      .star:nth-child(44) {
+        --star-tail-length: 6.38em;
+        --top-offset: 20.91vh;
+        --fall-duration: 8s;
+        --fall-delay: 6.957s;
+      }
+      .star:nth-child(45) {
+        --star-tail-length: 6.23em;
+        --top-offset: 27.69vh;
+        --fall-duration: 10.065s;
+        --fall-delay: 8.493s;
+      }
+      .star:nth-child(46) {
+        --star-tail-length: 7.42em;
+        --top-offset: 64.39vh;
+        --fall-duration: 8.092s;
+        --fall-delay: 2.249s;
+      }
+      .star:nth-child(47) {
+        --star-tail-length: 5.96em;
+        --top-offset: 52.07vh;
+        --fall-duration: 6.577s;
+        --fall-delay: 8.745s;
+      }
+      .star:nth-child(48) {
+        --star-tail-length: 5.68em;
+        --top-offset: 65.08vh;
+        --fall-duration: 7.774s;
+        --fall-delay: 0.735s;
+      }
+      .star:nth-child(49) {
+        --star-tail-length: 6.48em;
+        --top-offset: 97.69vh;
+        --fall-duration: 10.44s;
+        --fall-delay: 5.028s;
+      }
+      .star:nth-child(50) {
+        --star-tail-length: 6.6em;
+        --top-offset: 70.82vh;
+        --fall-duration: 9.249s;
+        --fall-delay: 8.58s;
+      }
+      .star::before, .star::after {
+        position: absolute;
+        content: "";
+        top: 0;
+        left: calc(var(--star-width) / -2);
+        width: var(--star-width);
+        height: 100%;
+        background: linear-gradient(45deg, transparent, currentColor, transparent);
+        border-radius: inherit;
+        animation: blink 2s linear infinite;
+      }
+      .star::before {
+        transform: rotate(0deg);
+      }
+      .star::after {
+        transform: rotate(-45deg);
+      }
+      
+      @keyframes fall {
+        to {
+          transform: translate3d(-60em, 0, 0);
+         
+        }
+      }
+      @keyframes tail-fade {
+        0%, 50% {
+          width: var(--star-tail-length);
+          opacity: 1;
+        }
+        70%, 80% {
+          width: 0;
+          opacity: 0.4;
+        }
+        100% {
+          width: 0;
+          opacity: 0;
+        }
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0.6;
+        }
+      }  
+</style>
+</head>
+<body>
+  <div class="stars">
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+  </div>
+<!-- partial:index.partial.html -->
+<section class="forms-section">
+  <h1 class="section-title">Join with Planet Hunters</h1>
+  <div class="forms">
+    <div class="form-wrapper is-active">
+      <button type="button" class="switcher switcher-login">
+        Sign Up
+        <span class="underline"></span>
+      </button>
+      <form action ="/home/signup/" method="post" class="form form-login">
+        {% csrf_token %}
+        <fieldset>
+          <legend>Please, enter your email, password and password confirmation for sign up.</legend>
+          <div class="input-block">
+            <label for="">E-mail</label>
+            <input id="email" name="email" type="email" required>
+          </div>
+          <div class="input-block">
+            <label for="">Password</label>
+            <input id="pass1" name= "pass1" type="password" required>
+          </div>
+          <div class="input-block">
+            <label for="">Confirm password</label>
+            <input id="pass2" name="pass2" type="password" required>
+          </div>
+        </fieldset>
+        <button type="submit" class="btn-signup">Continue</button>
+        <a id="loginlink" href="https://www.w3schools.com">Got an account? log in here</a>
+      </form>
+    </div>
+  </div>
+</section>
+</body>
+</html>
