@@ -8,40 +8,70 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import PySimpleGUI as sg
 
 
-def draw_figure_w_toolbar(canvas, fig, canvas_toolbar):
-    if canvas.children:
-        for child in canvas.winfo_children():
-            child.destroy()
-    if canvas_toolbar.children:
-        for child in canvas_toolbar.winfo_children():
-            child.destroy()
-    figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-    toolbar = Toolbar(figure_canvas_agg, canvas_toolbar)
-    toolbar.update()
-    figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
-
-class Toolbar(NavigationToolbar2Tk):
-    def __init__(self, *args, **kwargs):
-        super(Toolbar, self).__init__(*args, **kwargs)
-
-
-# windowId = 0 for simple search and windowId =1 for advanced search
-
-windowId = 0
+progress = False
 name = ''
 f = False
+T_name = ""
+author = ""
+Filter = None
+lc = None
 fig = ''
 exo = 0
 search_result = []
+exit = False
 S_Font = ('Helvetica', 20)
 S_Font2 = ('Helvetica', 18)
 S_Font3 = ('Helvetica', 15)
 sg.theme('DarkTeal10')
+
+
 while True:
-    if windowId == 0:
+    def progress_bar():
+        global T_name
+        global author
+        global search_result
+        layout = [[sg.Text('Collecting data from database...')],
+                [sg.ProgressBar(100, orientation='h', size=(20, 20), key='progbar')],
+                [sg.Cancel()]]
+        window = sg.Window('Working...', layout)
+        search_result = lk.search_lightcurve(T_name, author=author)
+        for i in range(100):
+            event, values = window.read(timeout=1)
+            if event == 'Cancel' or event == sg.WIN_CLOSED:
+                break
+            window['progbar'].update_bar(i + 10)
+        window.close()
+
+    def draw_figure_w_toolbar(canvas, fig, canvas_toolbar):
+        if canvas.children:
+            for child in canvas.winfo_children():
+                child.destroy()
+        if canvas_toolbar.children:
+            for child in canvas_toolbar.winfo_children():
+                child.destroy()
+        figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas)
+        figure_canvas_agg.draw()
+        figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        toolbar = Toolbar(figure_canvas_agg, canvas_toolbar)
+        toolbar.update()
+        figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+    class Toolbar(NavigationToolbar2Tk):
+        def __init__(self, *args, **kwargs):
+            super(Toolbar, self).__init__(*args, **kwargs)
+
+    def searchScreen():
+        global progress
+        global f
+        global T_name
+        global author
+        global exo
+        global filter
+        global lc
+        global fig
+        global search_result
+        global exit
+        progress = False
         f = False
         layout = [[sg.Text('Search Exoplanet with Target name & Author', font=S_Font)],
                   [sg.Text('Target Name:', font=S_Font2),
@@ -50,7 +80,7 @@ while True:
                    sg.InputText('QLP', font=S_Font2)],
                   [sg.Button('Search', font=S_Font2),
                    sg.Button('Exit', font=S_Font2)],
-                  [sg.Image("empty.png"), sg.Image("empty.png"), sg.Image("Nasa.png"), sg.Image("TESS_Logo.png")]]
+                  [sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/empty.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/empty.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/Nasa.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/TESS_Logo.png")]]
         window = sg.Window('Exoplanet Analyzer', layout, size=(700, 300))
         event, values = window.read()
         if event == 'Search':
@@ -59,15 +89,27 @@ while True:
             if T_name == '' or author == '':
                 sg.Popup("No Target Name/ Author Input", font=S_Font2)
                 window.close()
-                windowId = 0
+                searchScreen()
             else:
                 window.close()
-                windowId = 1
+                selectScreen()
         if event == 'WIN_CLOSED':
-            break
+            exit = True
+            window.close()
         if event in (None, 'Exit'):
-            break
-    if windowId == 2:
+            exit = True
+            window.close()
+
+    def filterScreen():
+        global f
+        global T_name
+        global author
+        global exo
+        global filter
+        global lc
+        global fig
+        global search_result
+        global exit
         layout2 = [[sg.Text('Search using specific identifier', font=S_Font2)],
                    [sg.Text('Identifier: ', font=S_Font2),
                     sg.Listbox(
@@ -91,20 +133,25 @@ while True:
         window2 = sg.Window('Advanced Search', layout2, size=(480, 700))
         event, values = window2.read()
         if event == 'Back':
-            windowId = 1
+            selectScreen()
             window2.close()
         if event == 'WIN_CLOSED':
-            break
+            exit = True
+            window2.close()
         if event in (None, 'Exit'):
-            break
+            exit = True
+            window2.close()
         if event == 'Search':
             search_result = lk.search_lightcurve(T_name, author=author)
+            print("T_name is :",T_name)
+            print("author is :",author)
+            print("search is :",search_result)
             f_by = values['fac']
             f_val = values[0]
             if f_by == '' or f_val == '':
                 sg.Popup("Please Select Identifier & Input valid Value", font=S_Font2)
                 window2.close()
-                windowId = 2
+                filterScreen()
             else:
                 if f_val.startswith('"') and f_val.endswith('"'):
                     f_val = f_val[1:-1]
@@ -114,10 +161,22 @@ while True:
                     Filter = np.where(search_result.table[f_by[0]] == int(f_val))[0]
                 f = True
                 window2.close()
-                windowId = 1
+                selectScreen()
 
-    if windowId == 1:
-        search_result = lk.search_lightcurve(T_name, author=author)
+    def selectScreen():
+        global f
+        global T_name
+        global author
+        global exo
+        global filter
+        global lc
+        global fig
+        global search_result
+        global exit
+        global progress
+        if progress == False:
+            progress_bar()
+            progress = True
         if f == True:
             layout3 = [
                 [sg.Text(search_result[Filter], font=S_Font3, justification='left')],
@@ -139,24 +198,25 @@ while True:
         event, values = window3.read()
         if event == 'Reset':
             f = False
-            search_result = lk.search_lightcurve(T_name, author=author)
             window3.close()
-            windowId = 1
+            selectScreen()
         if event == 'Back To Search':
             window3.close()
-            windowId = 0
+            searchScreen()
         if event == 'WIN_CLOSED':
-            break
+            window3.close()
+            exit = True
         if event in (None, 'Exit'):
-            break
+            window3.close()
+            exit = True
         if event == 'Advanced Filter':
             window3.close()
-            windowId = 2
+            filterScreen()
         if event == 'Select Data':
             if values[0] == '':
                 sg.Popup("Input valid #", font=S_Font2)
                 window3.close()
-                windowId = 1
+                selectScreen()
             else:
                 exo = values[0]
                 if f == True:
@@ -164,9 +224,18 @@ while True:
                 else:
                     lc = search_result[int(exo)].download()
                 window3.close()
-                windowId = 3
+                plotsScreen()
 
-    if windowId == 3:
+    def plotsScreen():
+        global f
+        global T_name
+        global author
+        global exo
+        global filter
+        global lc
+        global fig
+        global search_result
+        global exit
         layout5 = [
             [sg.T('Graph: Light Curve')],
             [sg.B('Light Curve'), sg.B('Flattened LC'), sg.B('Folded')],
@@ -190,8 +259,9 @@ while True:
             event, values = window5.read()
             if event in (sg.WIN_CLOSED, 'Back'):  # always,  always give a way out!
                 window5.close()
-                windowId = 1
+                selectScreen()
                 break
+
             if event == 'Flattened LC':
                 plt.close("all")
                 flat_lc = lc.flatten()
@@ -218,3 +288,7 @@ while True:
                 DPI = fig.get_dpi()
                 fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
                 draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+    if exit == False:
+        searchScreen()
+    else:
+        break
