@@ -91,6 +91,9 @@ while True:
                 window.close()
                 searchScreen()
             else:
+                if progress == False:
+                    progress_bar()
+                    progress = True
                 window.close()
                 selectScreen()
         if event == 'WIN_CLOSED':
@@ -174,9 +177,6 @@ while True:
         global search_result
         global exit
         global progress
-        if progress == False:
-            progress_bar()
-            progress = True
         if f == True:
             layout3 = [
                 [sg.Text(search_result[Filter], font=S_Font3, justification='left')],
