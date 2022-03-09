@@ -1,5 +1,5 @@
 import tkinter
-
+import os
 import lightkurve as lk
 import matplotlib.pyplot
 import numpy as np
@@ -80,7 +80,7 @@ while True:
                    sg.InputText('QLP', font=S_Font2)],
                   [sg.Button('Search', font=S_Font2),
                    sg.Button('Exit', font=S_Font2)],
-                  [sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/empty.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/empty.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/Nasa.png"), sg.Image("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/TESS_Logo.png")]]
+                  [sg.Image("./Images/empty.png"), sg.Image("./Images/empty.png"), sg.Image("./Images/Nasa.png"), sg.Image("./Images/TESS_Logo.png")]]
         window = sg.Window('Exoplanet Analyzer', layout, size=(700, 300))
         event, values = window.read()
         if event == 'Search':
