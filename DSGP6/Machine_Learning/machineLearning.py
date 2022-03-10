@@ -50,6 +50,3 @@ data = pd.pivot_table(data=data,index=['koi_disposition'], columns=['kepid'])
 data.dropna()
 print(data)
 
-heatmap_plot = sns.heatmap(data.T)
-
-plt.show()
