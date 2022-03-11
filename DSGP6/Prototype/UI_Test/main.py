@@ -1,3 +1,4 @@
+import json
 import tkinter
 import os
 import lightkurve as lk
@@ -6,7 +7,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import PySimpleGUI as sg
+import requests
 
+apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
+
+def sign_in_with_email_and_password(email: str, password: str, return_secure_token: bool = True):
+    payload = json.dumps({
+        "email": email,
+        "password": password,
+        "returnSecureToken": return_secure_token
+    })
+
+    r = requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+                        params={"key": apikey},
+                        data=payload)
+
+    if 'error' in r.json().keys():
+        return {'status':'error','message':r.json()['error']['message']}
+    #if the login succeeded
+    if 'idToken' in r.json().keys() :
+            return {'status':'success','idToken':r.json()['idToken']}
+
+    return r.json()
+
+def NewUser(email,password):
+    details={
+        'email':email,
+        'password':password,
+        'returnSecureToken': True
+    }
+    # send post request
+    r=requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={}'.format(apikey),data=details)
+    #check for errors in result
+    if 'error' in r.json().keys():
+        return {'status':'error','message':r.json()['error']['message']}
+    #if the registration succeeded
+    if 'idToken' in r.json().keys() :
+            return {'status':'success','idToken':r.json()['idToken']}
 
 progress = False
 name = ''
@@ -23,6 +60,8 @@ S_Font = ('Helvetica', 20)
 S_Font2 = ('Helvetica', 18)
 S_Font3 = ('Helvetica', 15)
 sg.theme('DarkTeal10')
+username = ''
+password = ''
 
 
 while True:
@@ -59,6 +98,102 @@ while True:
     class Toolbar(NavigationToolbar2Tk):
         def __init__(self, *args, **kwargs):
             super(Toolbar, self).__init__(*args, **kwargs)
+
+    def progress_bar2():
+        layout = [[sg.Text('Creating your account...')],
+                [sg.ProgressBar(100, orientation='h', size=(20, 20), key='progbar')],
+                [sg.Cancel()]]
+        window = sg.Window('Working...', layout)
+        for i in range(100):
+            event, values = window.read(timeout=1)
+            if event == 'Cancel' or event == sg.WIN_CLOSED:
+                break
+            window['progbar'].update_bar(i + 10)
+        window.close()
+
+
+    def create_account():
+        global exit
+        layout = [[sg.Text("Sign Up", size =(15, 1), font=40, justification='c')],
+                [sg.Text("E-mail", size =(15, 1),font=16), sg.InputText(key='-email-', font=16)],
+                [sg.Text("Re-enter E-mail", size =(15, 1), font=16), sg.InputText(key='-remail-', font=16)],
+                [sg.Text("Create Password", size =(15, 1), font=16), sg.InputText(key='-password-', font=16, password_char='*')],
+                [sg.Button("Submit"), sg.Button("Cancel"),sg.Button("Login")]]
+
+        window = sg.Window("Sign Up", layout)
+
+        while True:
+            event,values = window.read()
+            if event == 'WIN_CLOSED':
+                exit = True
+                window.close()
+                break
+            elif event in (None, 'Exit'):
+                exit = True
+                window.close()
+                break
+            else:
+                if event == "Login" :
+                    window.close()
+                    login()
+                    break
+                if event == "Submit":
+                    password = values['-password-']
+                    if values['-email-'] != values['-remail-']:
+                        sg.popup_error("Error", font=16)
+                        continue
+                    elif values['-email-'] == values['-remail-']:
+                        progress_bar2()
+                        test = NewUser(values['-email-'],password)
+                        if test['status'] == 'success' :
+                            sg.popup("Thank you for signing up, please login now", font=16)
+                            window.close()
+                            login()
+                            break
+                        else:
+                            sg.popup_error("Error %f",test['message'], font=16)
+                            window.close()
+                        break
+        window.close()
+
+
+    def login():
+        global exit
+        layout = [[sg.Text("Log In", size =(15, 1), font=40)],
+                [sg.Text("Email", size =(15, 1), font=16),sg.InputText(key='-email-', font=16)],
+                [sg.Text("Password", size =(15, 1), font=16),sg.InputText(key='-pwd-', password_char='*', font=16)],
+                [sg.Button('Ok'),sg.Button('Cancel'),sg.Button('Sign Up')]]
+
+        window = sg.Window("Log In", layout)
+
+        while True:
+            event,values = window.read()
+            if event == 'WIN_CLOSED':
+                exit = True
+                window.close()
+                break
+            elif event in (None, 'Exit'):
+                exit = True
+                window.close()
+                break
+            elif event == "Sign Up":
+                window.close()
+                create_account()
+                break
+            else:
+                if event == "Ok":
+                    token = sign_in_with_email_and_password(values['-email-'], values['-pwd-'])
+                    if token['status'] == 'success' :
+                        sg.popup("Welcome!", font=16)
+                        window.close()
+                        searchScreen()
+                        break
+                    else:
+                        sg.popup_error("Error %f",token['message'], font=16)
+                        window.close()
+                        login()
+                    break
+        window.close()
 
     def searchScreen():
         global progress
@@ -289,6 +424,6 @@ while True:
                 fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
                 draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
     if exit == False:
-        searchScreen()
+        create_account()
     else:
         break
