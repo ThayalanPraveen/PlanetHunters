@@ -1,3 +1,4 @@
+from glob import glob
 import json
 import tkinter
 import os
@@ -7,7 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import PySimpleGUI as sg
+from pandas import array
 import requests
+import firebase_admin
+from firebase_admin import db
+
+import firebase_admin
+from firebase_admin import credentials
+
+cred = credentials.Certificate("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json")
+firebase_admin.initialize_app(cred , {
+    'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
+})
+
 
 apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
 
@@ -61,10 +74,35 @@ S_Font2 = ('Helvetica', 18)
 S_Font3 = ('Helvetica', 15)
 sg.theme('DarkTeal10')
 username = ''
-password = ''
-
 
 while True:
+    
+    def habitabilityScreen():
+        return
+
+    def startScreen():
+        global exit
+        layout = [[sg.Button('Exoplanet Detection', font=S_Font2),
+                   sg.Button('Habitability Detection', font=S_Font2)]]
+
+        window = sg.Window('Planet Hunters', layout, size=(395, 100))
+        while True:
+            event, values = window.read()
+            if event == 'Exoplanet Detection':
+                window.close()
+                searchScreen()
+                break
+            elif event == 'Habitability Detection':
+                window.close()
+                habitabilityScreen()
+                break
+            if event == 'WIN_CLOSED':
+                exit = True
+                window.close()
+            if event in (None, 'Exit'):
+                exit = True
+                window.close()
+
     def progress_bar():
         global T_name
         global author
@@ -73,7 +111,7 @@ while True:
                 [sg.ProgressBar(100, orientation='h', size=(20, 20), key='progbar')],
                 [sg.Cancel()]]
         window = sg.Window('Working...', layout)
-        search_result = lk.search_lightcurve(T_name, author=author)
+        search_result = lk.search_lightcurve(T_name)
         for i in range(100):
             event, values = window.read(timeout=1)
             if event == 'Cancel' or event == sg.WIN_CLOSED:
@@ -147,18 +185,29 @@ while True:
                         test = NewUser(values['-email-'],password)
                         if test['status'] == 'success' :
                             sg.popup("Thank you for signing up, please login now", font=16)
+                            test = values['-email-']
+                            test = test.replace("@","")
+                            test = test.replace(".","")
+                            ref = db.reference('/users')
+                            ref.set({
+                                test : {
+                                    'History': { "array" : [0] }
+                                }
+                            })
                             window.close()
                             login()
                             break
                         else:
                             sg.popup_error("Error %f",test['message'], font=16)
                             window.close()
+                            create_account()
                         break
         window.close()
 
 
     def login():
         global exit
+        global username
         layout = [[sg.Text("Log In", size =(15, 1), font=40)],
                 [sg.Text("Email", size =(15, 1), font=16),sg.InputText(key='-email-', font=16)],
                 [sg.Text("Password", size =(15, 1), font=16),sg.InputText(key='-pwd-', password_char='*', font=16)],
@@ -184,9 +233,13 @@ while True:
                 if event == "Ok":
                     token = sign_in_with_email_and_password(values['-email-'], values['-pwd-'])
                     if token['status'] == 'success' :
+                        test = values['-email-']
+                        test = test.replace("@","")
+                        test = test.replace(".","")
+                        username = test
                         sg.popup("Welcome!", font=16)
                         window.close()
-                        searchScreen()
+                        startScreen()
                         break
                     else:
                         sg.popup_error("Error %f",token['message'], font=16)
@@ -196,6 +249,7 @@ while True:
         window.close()
 
     def searchScreen():
+        global username
         global progress
         global f
         global T_name
@@ -211,32 +265,55 @@ while True:
         layout = [[sg.Text('Search Exoplanet with Target name & Author', font=S_Font)],
                   [sg.Text('Target Name:', font=S_Font2),
                    sg.InputText('TIC 145241359', font=S_Font2)],
-                  [sg.Text('Author:   ', font=S_Font2),
-                   sg.InputText('QLP', font=S_Font2)],
                   [sg.Button('Search', font=S_Font2),
-                   sg.Button('Exit', font=S_Font2)],
-                  [sg.Image("./Images/empty.png"), sg.Image("./Images/empty.png"), sg.Image("./Images/Nasa.png"), sg.Image("./Images/TESS_Logo.png")]]
-        window = sg.Window('Exoplanet Analyzer', layout, size=(700, 300))
-        event, values = window.read()
-        if event == 'Search':
-            T_name = values[0]
-            author = values[1]
-            if T_name == '' or author == '':
-                sg.Popup("No Target Name/ Author Input", font=S_Font2)
+                   sg.Button('Exit', font=S_Font2),sg.Button('Suggested Targets', font=S_Font2),sg.Button('History', font=S_Font2)],]
+
+        window = sg.Window('Exoplanet Analyzer', layout, size=(700, 150))
+        while True:
+            event, values = window.read()
+            if event == "Suggested Targets" :
+                pass
+            if event == "History" :
                 window.close()
-                searchScreen()
-            else:
-                if progress == False:
-                    progress_bar()
-                    progress = True
+                history()
+                break
+
+            if event == 'Search':
+                T_name = values[0]
+                if T_name == '' :
+                    sg.Popup("No Target Name ", font=S_Font2)
+                    window.close()
+                    searchScreen()
+                    break
+                else:
+                    if progress == False:
+                        progress_bar()
+                        progress = True
+                    hist_array = []
+                    ref = db.reference('/users')
+                    users_ref = ref.child(username)
+                    user_data = users_ref.get()
+                    hist_array = user_data['History']['array']
+                    if hist_array[0] == 0 :
+                        hist_array[0] = T_name
+                    else:
+                        hist_array.append(T_name)
+                    
+                    users_ref.update({
+
+                        'History': {"array" : hist_array }
+                    })
+                    window.close()
+                    selectScreen()
+                    break
+            if event == 'WIN_CLOSED':
+                exit = True
                 window.close()
-                selectScreen()
-        if event == 'WIN_CLOSED':
-            exit = True
-            window.close()
-        if event in (None, 'Exit'):
-            exit = True
-            window.close()
+                break
+            if event in (None, 'Exit'):
+                exit = True
+                window.close()
+                break
 
     def filterScreen():
         global f
@@ -269,37 +346,82 @@ while True:
                     sg.Button('Back', font=S_Font2),
                     sg.Button('Exit', font=S_Font2)]]
         window2 = sg.Window('Advanced Search', layout2, size=(480, 700))
-        event, values = window2.read()
-        if event == 'Back':
-            selectScreen()
-            window2.close()
-        if event == 'WIN_CLOSED':
-            exit = True
-            window2.close()
-        if event in (None, 'Exit'):
-            exit = True
-            window2.close()
-        if event == 'Search':
-            search_result = lk.search_lightcurve(T_name, author=author)
-            print("T_name is :",T_name)
-            print("author is :",author)
-            print("search is :",search_result)
-            f_by = values['fac']
-            f_val = values[0]
-            if f_by == '' or f_val == '':
-                sg.Popup("Please Select Identifier & Input valid Value", font=S_Font2)
-                window2.close()
-                filterScreen()
-            else:
-                if f_val.startswith('"') and f_val.endswith('"'):
-                    f_val = f_val[1:-1]
-                    f_val = str(f_val)
-                    Filter = np.where(search_result.table[f_by[0]] == f_val)[0]
-                else:
-                    Filter = np.where(search_result.table[f_by[0]] == int(f_val))[0]
-                f = True
+        while True:
+            event, values = window2.read()
+            if event == 'Back':
                 window2.close()
                 selectScreen()
+                break
+            if event == 'WIN_CLOSED':
+                exit = True
+                window2.close()
+                break
+            if event in (None, 'Exit'):
+                exit = True
+                window2.close()
+                break
+            if event == 'Search':
+                search_result = lk.search_lightcurve(T_name, author=author)
+                print("T_name is :",T_name)
+                print("author is :",author)
+                print("search is :",search_result)
+                f_by = values['fac']
+                f_val = values[0]
+                if f_by == '' or f_val == '':
+                    sg.Popup("Please Select Identifier & Input valid Value", font=S_Font2)
+                    window2.close()
+                    filterScreen()
+                    break
+                else:
+                    if f_val.startswith('"') and f_val.endswith('"'):
+                        f_val = f_val[1:-1]
+                        f_val = str(f_val)
+                        Filter = np.where(search_result.table[f_by[0]] == f_val)[0]
+                    else:
+                        Filter = np.where(search_result.table[f_by[0]] == int(f_val))[0]
+                    f = True
+                    window2.close()
+                    selectScreen()
+                    break
+
+    def history():
+        global username
+        global T_name
+        hist_array = []
+        ref = db.reference('/users')
+        users_ref = ref.child(username)
+        user_data = users_ref.get()
+        hist_array = user_data['History']['array']
+        string = ""
+        for x in range(0,len(hist_array)):
+            string = string + hist_array[x] + "\n"
+
+        layout = [[sg.Listbox(values = hist_array, size=(31,6), font=S_Font2 , key='hist')],
+                  [sg.Button('Search', font=S_Font2),sg.Button('Clear History', font=S_Font2),sg.Button('Back to Search', font=S_Font2)]]
+
+        window = sg.Window('History', layout, size=(395, 200))
+        while True:
+            event, values = window.read()
+            if event == 'Search' :
+                T_name = values['hist'][0]
+                print(T_name)
+                progress_bar()
+                window.close()
+                selectScreen()
+                break
+            if event == 'Back to Search' :
+                window.close()
+                searchScreen()
+                break
+            if event == 'WIN_CLOSED':
+                exit = True
+                window.close()
+                break
+            if event in (None, 'Exit'):
+                exit = True
+                window.close()
+                break
+
 
     def selectScreen():
         global f
@@ -424,6 +546,6 @@ while True:
                 fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
                 draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
     if exit == False:
-        create_account()
+        login()
     else:
         break
