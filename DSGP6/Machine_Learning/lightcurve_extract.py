@@ -9,7 +9,7 @@ with open('/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Machine_L
         # pass the file object to reader() to get the reader object
         csv_reader = reader(read_obj)
         next(csv_reader)
-        for r in range(1,2762):
+        for r in range(1,3119):
             next(csv_reader)
         index = 0
         # Iterate over each row in the csv using reader object

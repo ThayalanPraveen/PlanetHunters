@@ -76,14 +76,16 @@ sg.theme('DarkTeal10')
 username = ''
 
 while True:
-    
+
     def habitabilityScreen():
         return
 
     def startScreen():
         global exit
+        welcome = "               Hey! Let's Start Hunting!"
         layout = [[sg.Button('Exoplanet Detection', font=S_Font2),
-                   sg.Button('Habitability Detection', font=S_Font2)]]
+                   sg.Button('Habitability Detection', font=S_Font2)],
+                   [sg.Text(welcome, font=S_Font2, justification = 'c')]]
 
         window = sg.Window('Planet Hunters', layout, size=(395, 100))
         while True:
@@ -99,9 +101,11 @@ while True:
             if event == 'WIN_CLOSED':
                 exit = True
                 window.close()
+                break
             if event in (None, 'Exit'):
                 exit = True
                 window.close()
+                break
 
     def progress_bar():
         global T_name
@@ -120,18 +124,26 @@ while True:
         window.close()
 
     def draw_figure_w_toolbar(canvas, fig, canvas_toolbar):
-        if canvas.children:
-            for child in canvas.winfo_children():
-                child.destroy()
-        if canvas_toolbar.children:
-            for child in canvas_toolbar.winfo_children():
-                child.destroy()
-        figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas)
-        figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-        toolbar = Toolbar(figure_canvas_agg, canvas_toolbar)
-        toolbar.update()
-        figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        try:
+            if canvas.children:
+                for child in canvas.winfo_children():
+                    child.destroy()
+            if canvas_toolbar.children:
+                for child in canvas_toolbar.winfo_children():
+                    child.destroy()
+            figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas)
+            figure_canvas_agg.draw()
+            figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+            toolbar = Toolbar(figure_canvas_agg, canvas_toolbar)
+            toolbar.update()
+            figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        except :
+            figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas)
+            figure_canvas_agg.draw()
+            figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+            toolbar = Toolbar(figure_canvas_agg, canvas_toolbar)
+            toolbar.update()
+            figure_canvas_agg.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
     class Toolbar(NavigationToolbar2Tk):
         def __init__(self, *args, **kwargs):
@@ -237,7 +249,6 @@ while True:
                         test = test.replace("@","")
                         test = test.replace(".","")
                         username = test
-                        sg.popup("Welcome!", font=16)
                         window.close()
                         startScreen()
                         break
@@ -493,8 +504,11 @@ while True:
         global fig
         global search_result
         global exit
+        start = False
+        graph_name = 'Graph: Light Curve'
+        ml_display = ': Not Analyzed'
         layout5 = [
-            [sg.T('Graph: Light Curve')],
+            [sg.T(graph_name, key='graph')],
             [sg.B('Light Curve'), sg.B('Flattened LC'), sg.B('Folded')],
             [sg.T('Controls:')],
             [sg.Canvas(key='controls_cv')],
@@ -509,17 +523,22 @@ while True:
                 background_color='#DAE0E6',
                 pad=(0, 0)
             )],
+            [sg.B('Predict with Machine Learning'),sg.Text(ml_display, font=S_Font2)],
             [sg.B('Back')]
         ]
         window5 = sg.Window('Graph with controls', layout5)
         while True:
+
             event, values = window5.read()
+
             if event in (sg.WIN_CLOSED, 'Back'):  # always,  always give a way out!
                 window5.close()
                 selectScreen()
                 break
-
+                
             if event == 'Flattened LC':
+                graph_name = 'Graph: Flattened LC'
+                window5['graph'].update(value = graph_name)
                 plt.close("all")
                 flat_lc = lc.flatten()
                 flat_lc.plot()
@@ -529,6 +548,8 @@ while True:
                 draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
 
             if event == 'Light Curve':
+                graph_name = 'Graph: Light Curve'
+                window5['graph'].update(value = graph_name)
                 lc.plot()
                 fig = matplotlib.pyplot.gcf()
                 DPI = fig.get_dpi()
@@ -536,6 +557,8 @@ while True:
                 draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
 
             if event == 'Folded':
+                graph_name = 'Graph: Folded LC'
+                window5['graph'].update(value = graph_name)
                 flat_lc = lc.flatten()
                 periodogram = flat_lc.to_periodogram(method="bls")
                 best_fit_period = periodogram.period_at_max_power
