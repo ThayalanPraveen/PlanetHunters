@@ -16,7 +16,8 @@ from firebase_admin import db
 import firebase_admin
 from firebase_admin import credentials
 
-cred = credentials.Certificate("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json")
+#cred = credentials.Certificate("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json") #praveens key
+cred = credentials.Certificate(r"C:\Users\hamda\Desktop\GIT_DSGP\PlanetHunters\DSGP6\Prototype\UI_Test\planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json") #hamdas key
 firebase_admin.initialize_app(cred , {
     'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
 })
