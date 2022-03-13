@@ -1,6 +1,5 @@
-from glob import glob
+# Imports 
 import json
-import pickle
 import tkinter
 import pandas as pd
 import os
@@ -11,21 +10,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import PySimpleGUI as sg
-from pandas import array
 import requests
 import firebase_admin
 from firebase_admin import db
 import sys
-
 import firebase_admin
 from firebase_admin import credentials
+
+# Global Variables
+progress = False # to run progress bar only during the search
+f = False # indicator to know if search has been filtered
+T_name = "" # search name of kepler/tess id
+Filter = None # filtered search result
+lc = None # light curve data
+fig = '' # fig for matplotlib
+search_result = [] # store the search result
+exit = False # to exit program
+
+## Font sizes for app ##
+
+S_Font = ('Helvetica', 20)
+S_Font2 = ('Helvetica', 18)
+S_Font3 = ('Helvetica', 15)
+sg.theme('DarkTeal10')
+username = ''
 
 cred = credentials.Certificate(os.path.join(sys.path[0],'planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
 
 firebase_admin.initialize_app(cred , {
     'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
 })
-
 
 apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
 
@@ -63,23 +77,6 @@ def NewUser(email,password):
     if 'idToken' in r.json().keys() :
             return {'status':'success','idToken':r.json()['idToken']}
 
-progress = False
-name = ''
-f = False
-T_name = ""
-author = ""
-Filter = None
-lc = None
-fig = ''
-exo = 0
-search_result = []
-exit = False
-S_Font = ('Helvetica', 20)
-S_Font2 = ('Helvetica', 18)
-S_Font3 = ('Helvetica', 15)
-sg.theme('DarkTeal10')
-username = ''
-
 while True:
 
     def habitabilityScreen():
@@ -114,7 +111,6 @@ while True:
 
     def progress_bar():
         global T_name
-        global author
         global search_result
         layout = [[sg.Text('Collecting data from database...')],
                 [sg.ProgressBar(100, orientation='h', size=(20, 20), key='progbar')],
@@ -165,7 +161,6 @@ while True:
                 break
             window['progbar'].update_bar(i + 10)
         window.close()
-
 
     def create_account():
         global exit
@@ -222,7 +217,6 @@ while True:
                         break
         window.close()
 
-
     def login():
         global exit
         global username
@@ -270,13 +264,8 @@ while True:
         global progress
         global f
         global T_name
-        global author
-        global exo
-        global filter
-        global lc
-        global fig
-        global search_result
         global exit
+
         progress = False
         f = False
         layout = [[sg.Text('Search Exoplanet with Target name & Author', font=S_Font)],
@@ -334,14 +323,10 @@ while True:
 
     def filterScreen():
         global f
-        global T_name
-        global author
-        global exo
-        global filter
-        global lc
-        global fig
+        global Filter
         global search_result
         global exit
+
         layout2 = [[sg.Text('Search using specific identifier', font=S_Font2)],
                    [sg.Text('Identifier: ', font=S_Font2),
                     sg.Listbox(
@@ -378,10 +363,6 @@ while True:
                 window2.close()
                 break
             if event == 'Search':
-                search_result = lk.search_lightcurve(T_name, author=author)
-                print("T_name is :",T_name)
-                print("author is :",author)
-                print("search is :",search_result)
                 f_by = values['fac']
                 f_val = values[0]
                 if f_by == '' or f_val == '':
@@ -390,16 +371,36 @@ while True:
                     filterScreen()
                     break
                 else:
-                    if f_val.startswith('"') and f_val.endswith('"'):
-                        f_val = f_val[1:-1]
-                        f_val = str(f_val)
+                    Filter2 = None
+                    try:
                         Filter = np.where(search_result.table[f_by[0]] == f_val)[0]
-                    else:
-                        Filter = np.where(search_result.table[f_by[0]] == int(f_val))[0]
-                    f = True
-                    window2.close()
-                    selectScreen()
-                    break
+                        print('1 success')
+                        try: 
+                            Filter2 = np.where(search_result.table[f_by[0]] == float(f_val))[0]
+                            if len(Filter2) > len(Filter) :
+                                Filter = Filter2
+                            f = True
+                            window2.close()
+                            selectScreen()
+                            break
+                        except:
+                            print('2 success')
+                            f = True
+                            window2.close()
+                            selectScreen()
+                            break
+                    except:
+                        try:
+                            Filter2 = np.where(search_result.table[f_by[0]] == float(f_val))[0]
+                            f = True
+                            window2.close()
+                            selectScreen()
+                            break
+                        except:
+                            sg.Popup("Please Select Identifier & Input valid Value", font=S_Font2)
+                            window2.close()
+                            filterScreen()
+                            break
 
     def history():
         global username
@@ -439,18 +440,13 @@ while True:
                 window.close()
                 break
 
-
     def selectScreen():
         global f
-        global T_name
-        global author
-        global exo
         global filter
         global lc
-        global fig
         global search_result
         global exit
-        global progress
+
         if f == True:
             layout3 = [
                 [sg.Text(search_result[Filter], font=S_Font3, justification='left')],
@@ -501,14 +497,8 @@ while True:
                 plotsScreen()
 
     def plotsScreen():
-        global f
-        global T_name
-        global author
-        global exo
-        global filter
         global lc
         global fig
-        global search_result
         global exit
         start = False
         graph_name = 'Graph: Light Curve'
