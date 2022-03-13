@@ -546,7 +546,7 @@ while True:
                     temp = str(arr3[x])
                     if temp == 'nan' :
                         arr3[x] = 0
-                model = joblib.load(os.path.join(sys.path[0],'ml_model3.joblib'))
+                model = joblib.load(os.path.join(sys.path[0],'ml_model4.joblib'))
                 result = model.predict([arr3])
                 result_string = ''
                 if result[0] == 0 :
@@ -561,37 +561,60 @@ while True:
                 break
                 
             if event == 'Flattened LC':
-                graph_name = 'Graph: Flattened LC'
-                window5['graph'].update(value = graph_name)
-                plt.close("all")
-                flat_lc = lc.flatten()
-                flat_lc.plot()
-                fig = matplotlib.pyplot.gcf()
-                DPI = fig.get_dpi()
-                fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
-                draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                try:
+                    graph_name = 'Graph: Flattened LC'
+                    window5['graph'].update(value = graph_name)
+                    plt.close("all")
+                    flat_lc = lc.flatten()
+                    flat_lc.plot()
+                    fig = matplotlib.pyplot.gcf()
+                    DPI = fig.get_dpi()
+                    fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
+                    draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                except:
+                    sg.Popup("Could not generate graph sorry!", font=S_Font2)
+                    graph_name = 'Graph: Light Curve'
+                    window5['graph'].update(value = graph_name)
+                    lc.plot()
+                    fig = matplotlib.pyplot.gcf()
+                    DPI = fig.get_dpi()
+                    fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
+                    draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
 
             if event == 'Light Curve':
-                graph_name = 'Graph: Light Curve'
-                window5['graph'].update(value = graph_name)
-                lc.plot()
-                fig = matplotlib.pyplot.gcf()
-                DPI = fig.get_dpi()
-                fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
-                draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                try:
+                    graph_name = 'Graph: Light Curve'
+                    window5['graph'].update(value = graph_name)
+                    lc.plot()
+                    fig = matplotlib.pyplot.gcf()
+                    DPI = fig.get_dpi()
+                    fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
+                    draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                except:
+                    sg.Popup("Could not generate graph sorry!", font=S_Font2)
 
             if event == 'Folded':
-                graph_name = 'Graph: Folded LC'
-                window5['graph'].update(value = graph_name)
-                flat_lc = lc.flatten()
-                periodogram = flat_lc.to_periodogram(method="bls")
-                best_fit_period = periodogram.period_at_max_power
-                folded_lc = flat_lc.fold(period=best_fit_period)
-                folded_lc.plot()
-                fig = matplotlib.pyplot.gcf()
-                DPI = fig.get_dpi()
-                fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
-                draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                try:
+                    graph_name = 'Graph: Folded LC'
+                    window5['graph'].update(value = graph_name)
+                    flat_lc = lc.flatten()
+                    periodogram = flat_lc.to_periodogram(method="bls")
+                    best_fit_period = periodogram.period_at_max_power
+                    folded_lc = flat_lc.fold(period=best_fit_period)
+                    folded_lc.plot()
+                    fig = matplotlib.pyplot.gcf()
+                    DPI = fig.get_dpi()
+                    fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
+                    draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
+                except:
+                    sg.Popup("Could not generate graph sorry!", font=S_Font2)
+                    graph_name = 'Graph: Light Curve'
+                    window5['graph'].update(value = graph_name)
+                    lc.plot()
+                    fig = matplotlib.pyplot.gcf()
+                    DPI = fig.get_dpi()
+                    fig.set_size_inches(400 * 2 / float(DPI), 400 / float(DPI))
+                    draw_figure_w_toolbar(window5['fig_cv'].TKCanvas, fig, window5['controls_cv'].TKCanvas)
     if exit == False:
         login()
     else:
