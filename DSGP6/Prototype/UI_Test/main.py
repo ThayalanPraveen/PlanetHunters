@@ -1,7 +1,10 @@
 from glob import glob
 import json
+import pickle
 import tkinter
+import pandas as pd
 import os
+import joblib
 import lightkurve as lk
 import matplotlib.pyplot
 import numpy as np
@@ -12,12 +15,13 @@ from pandas import array
 import requests
 import firebase_admin
 from firebase_admin import db
+import sys
 
 import firebase_admin
 from firebase_admin import credentials
 
-#cred = credentials.Certificate("/Users/thayalanpraveen/Documents/GitHub/PlanetHunters/DSGP6/Prototype/UI_Test/planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json") #praveens key
-cred = credentials.Certificate(r"C:\Users\hamda\Desktop\GIT_DSGP\PlanetHunters\DSGP6\Prototype\UI_Test\planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json") #hamdas key
+cred = credentials.Certificate(os.path.join(sys.path[0],'planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
+
 firebase_admin.initialize_app(cred , {
     'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
 })
@@ -196,13 +200,14 @@ while True:
                     elif values['-email-'] == values['-remail-']:
                         progress_bar2()
                         test = NewUser(values['-email-'],password)
+                        print(test['status'])
                         if test['status'] == 'success' :
                             sg.popup("Thank you for signing up, please login now", font=16)
                             test = values['-email-']
                             test = test.replace("@","")
                             test = test.replace(".","")
                             ref = db.reference('/users')
-                            ref.set({
+                            ref.update({
                                 test : {
                                     'History': { "array" : [0] }
                                 }
@@ -524,13 +529,41 @@ while True:
                 background_color='#DAE0E6',
                 pad=(0, 0)
             )],
-            [sg.B('Predict with Machine Learning'),sg.Text(ml_display, font=S_Font2)],
+            [sg.B('Predict with Machine Learning'),sg.Text(ml_display, font=S_Font2 , key = "predict")],
             [sg.B('Back')]
         ]
         window5 = sg.Window('Graph with controls', layout5)
         while True:
 
             event, values = window5.read()
+        
+            if event == 'Predict with Machine Learning' :
+                flux = lc.flux
+                arr = []
+                for x in range(0,1625):
+                    try:
+                        arr.append(float(flux[x].value))
+                    except:
+                        pass
+                arr2 = pd.DataFrame(arr)
+                arr3 =[]
+                for x in range(0,1625):
+                    try:
+                        arr3.append(arr2[0][x])
+                    except:
+                        arr3.append(0)
+                for x in range(0,1625):
+                    temp = str(arr3[x])
+                    if temp == 'nan' :
+                        arr3[x] = 0
+                model = joblib.load(os.path.join(sys.path[0],'ml_model3.joblib'))
+                result = model.predict([arr3])
+                result_string = ''
+                if result[0] == 0 :
+                    result_string = 'Less likely to be an exoplanet ... :( '
+                else:
+                    result_string = 'Very likely to be an exoplanet! :)'
+                window5['predict'].update(value = result_string)
 
             if event in (sg.WIN_CLOSED, 'Back'):  # always,  always give a way out!
                 window5.close()
