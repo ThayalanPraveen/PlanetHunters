@@ -5,8 +5,6 @@ import os
 import sys
 
 # open file in read mode
-# Link to download latest dataset joblib file
-# https://drive.google.com/drive/folders/1vKo9oikOx9qhYc2ahyUDC-n41WjSj0XU?usp=sharing
 
 with open(os.path.join(sys.path[0],'Dataset_v2.csv'), 'r') as read_obj:
     # pass the file object to reader() to get the reader object
@@ -15,16 +13,12 @@ with open(os.path.join(sys.path[0],'Dataset_v2.csv'), 'r') as read_obj:
     try:
         array = joblib.load('Dataset.joblib')
     except:
-        try:
-            print('Using Dataset1')
-            array = joblib.load('Dataset1.joblib')
-        except:
-            pass
+        print("Dataset.joblib not found")
+        array = joblib.load('Dataset1.joblib')
 
-
-    for r in range(0,165):
-        next(csv_reader)
     index = len(array)
+    for r in range(0,index):
+        next(csv_reader)
     search = False
     Dataset = array
     # Iterate over each row in the csv using reader object
