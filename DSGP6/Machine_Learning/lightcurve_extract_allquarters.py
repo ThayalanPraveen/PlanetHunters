@@ -5,12 +5,23 @@ import os
 import sys
 
 # open file in read mode
+# Link to download latest dataset joblib file
+# https://drive.google.com/drive/folders/1vKo9oikOx9qhYc2ahyUDC-n41WjSj0XU?usp=sharing
 
 with open(os.path.join(sys.path[0],'Dataset_v2.csv'), 'r') as read_obj:
     # pass the file object to reader() to get the reader object
     csv_reader = reader(read_obj)
     next(csv_reader)
-    array = joblib.load('Dataset.joblib')
+    try:
+        array = joblib.load('Dataset.joblib')
+    except:
+        try:
+            print('Using Dataset1')
+            array = joblib.load('Dataset1.joblib')
+        except:
+            pass
+
+
     for r in range(0,165):
         next(csv_reader)
     index = len(array)
@@ -44,6 +55,7 @@ with open(os.path.join(sys.path[0],'Dataset_v2.csv'), 'r') as read_obj:
                 index = index + 1
                 print(index)
                 joblib.dump(Dataset, 'Dataset.joblib')
+                joblib.dump(Dataset, 'Dataset1.joblib')
 
         except :
             print("download error")
