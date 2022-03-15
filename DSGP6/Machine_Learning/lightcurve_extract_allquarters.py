@@ -5,7 +5,6 @@ import os
 import sys
 
 # open file in read mode
-
 with open(os.path.join(sys.path[0],'Dataset_v2.csv'), 'r') as read_obj:
     # pass the file object to reader() to get the reader object
     csv_reader = reader(read_obj)
