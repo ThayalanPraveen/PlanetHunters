@@ -20,38 +20,71 @@ import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet
 
-
+# --------------------------------------------------------------------------
 cred = credentials.Certificate(os.path.join(sys.path[0],'planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
+# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
 firebase_admin.initialize_app(cred , {
     'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
 })
+# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
 apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
+# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
 target_search_result_scrollable_label = None
-advanced_search_results = None
+target_search_result = None
 target_search_id = None
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+advanced_search_results = None
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+sign_up = False
 signup_email_id = None
 signup_error_msg = ""
 signup_success = False
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 avatar = None
 pfp_load = False
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 network_status = False
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 width = 0
 height = 0
-sign_up = False
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 username = ""
 db_username = ""
-target_search_result = None
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 login_network_fail = False
 signup_network_fail = False
-search_result_isDownloaded_error = True
+# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+search_result_isDownloaded_error = True
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 class Worker(QObject):
     finished = Signal()
     progress = Signal(int)
 
+    # --------------------------------------------------------------------------
     def run(self):
         global target_search_result
         global search_result_isDownloaded_error
@@ -62,7 +95,9 @@ class Worker(QObject):
         except:
             search_result_isDownloaded_error = True
             self.finished.emit()
-    
+    # --------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     def login(self):
         global payload
         global r
@@ -78,7 +113,9 @@ class Worker(QObject):
             self.finished.emit()
         except:
             self.finished.emit()
+    # --------------------------------------------------------------------------
     
+    # --------------------------------------------------------------------------
     def signup(self):
         global signup_error_msg
         global signup_email_id
@@ -121,8 +158,9 @@ class Worker(QObject):
         except:
             signup_network_fail = True
             self.finished.emit()
+    # --------------------------------------------------------------------------
 
-
+# --------------------------------------------------------------------------
 class ScrollLabel(QScrollArea):
  
     # constructor
@@ -154,7 +192,9 @@ class ScrollLabel(QScrollArea):
     def setText(self, text):
         # setting text to the label
         self.label.setText(text)
+# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
 class ExoDetection(QWidget):
 
     # Initialize Exo-Planet Detection screen
@@ -517,7 +557,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
         self.select_btn.setFont(QFont("Helvetica",15))
-        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
+        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -748,6 +788,7 @@ class ExoDetection(QWidget):
             window = Select()
         window.show()
     # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 class Signup(QWidget):
     
@@ -951,7 +992,7 @@ class Signup(QWidget):
             window = Login()
         window.show()
     # --------------------------------------------------------------------------
-        
+# --------------------------------------------------------------------------       
 class Select(QWidget):
    
    # Initialize select screen
@@ -1124,7 +1165,7 @@ class Select(QWidget):
             window = ExoDetection()
         window.show()
     # --------------------------------------------------------------------------
-
+# --------------------------------------------------------------------------
 class Login(QWidget):
 
     # Initialize login screen
@@ -1385,7 +1426,7 @@ class Login(QWidget):
             window = Signup()
         window.show()
     # --------------------------------------------------------------------------
-        
+# --------------------------------------------------------------------------      
 
 # Application start
 # --------------------------------------------------------------------------  
