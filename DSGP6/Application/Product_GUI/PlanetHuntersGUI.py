@@ -240,10 +240,10 @@ class ExoDetection(QWidget):
 
         # Search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.search_btn = QPushButton(self)
-        self.search_btn.setFont(QFont("Robotto",15))
-        self.search_btn.setIcon(PySide6.QtGui.QIcon('Images/search.png'))
-        self.search_btn.setStyleSheet("""
+        self.target_search_btn = QPushButton(self)
+        self.target_search_btn.setFont(QFont("Robotto",15))
+        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
+        self.target_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
                                     background-color: #4b993f;
@@ -253,15 +253,15 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.search_btn.setGeometry(170,90,50,30)
-        self.search_btn.clicked.connect(self.search_clicked)
+        self.target_search_btn.setGeometry(170,90,50,30)
+        self.target_search_btn.clicked.connect(self.search_clicked)
         # --------------------------------------------------------------------------
 
         # Add button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
         self.add_advanced_search_btn.setFont(QFont("Robotto",15))
-        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon('Images/add.png'))
+        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -280,7 +280,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.search_advanced_search_btn = QPushButton(self)
         self.search_advanced_search_btn.setFont(QFont("Robotto",15))
-        self.search_advanced_search_btn.setIcon(PySide6.QtGui.QIcon('Images/search.png'))
+        self.search_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.search_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -299,7 +299,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
         self.undo_advanced_search_btn.setFont(QFont("Robotto",15))
-        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon('Images/undo.png'))
+        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -318,7 +318,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
         self.clear_advanced_search_btn.setFont(QFont("Robotto",15))
-        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon('Images/clear.png'))
+        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -382,9 +382,9 @@ class ExoDetection(QWidget):
 
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.target_search_btn = QPushButton("Back To Target Search",self)
-        self.target_search_btn.setFont(QFont("Robotto",15))
-        self.target_search_btn.setStyleSheet("""
+        self.target_screen_btn = QPushButton("Back To Target Search",self)
+        self.target_screen_btn.setFont(QFont("Robotto",15))
+        self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
                                     background-color: #4b993f;
@@ -394,9 +394,9 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.target_search_btn.setGeometry(240,130,200,30)
-        self.target_search_btn.clicked.connect(self.target_search_clicked)
-        self.target_search_btn.setHidden(True)
+        self.target_screen_btn.setGeometry(240,130,200,30)
+        self.target_screen_btn.clicked.connect(self.target_screen_clicked)
+        self.target_screen_btn.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
@@ -427,7 +427,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
         self.select_btn.setFont(QFont("Robotto",15))
-        self.select_btn.setIcon(PySide6.QtGui.QIcon('Images/search.png'))
+        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -446,7 +446,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
         self.back_btn.setFont(QFont("Robotto",15))
-        self.back_btn.setIcon(PySide6.QtGui.QIcon('Images/back.png'))
+        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -465,7 +465,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
         self.lgout_btn.setFont(QFont("Robotto",15))
-        self.lgout_btn.setIcon(PySide6.QtGui.QIcon('Images/logout.png'))
+        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -490,7 +490,7 @@ class ExoDetection(QWidget):
     
     # Target search button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
-    def target_search_clicked(self):
+    def target_screen_clicked(self):
         global window
         if self.window is None:
             window.close()
@@ -513,7 +513,7 @@ class ExoDetection(QWidget):
         self.validation_label.setText("")
         self.target_search_input.setHidden(True)
         self.search_label.setText("Advanced Search")
-        self.search_btn.setHidden(True)
+        self.target_search_btn.setHidden(True)
         self.target_label.setHidden(True)
         self.adv_select.setHidden(False)
         self.adv_search_input.setHidden(False)
@@ -523,7 +523,7 @@ class ExoDetection(QWidget):
         self.search_advanced_search_btn.setHidden(False)
         self.undo_advanced_search_btn.setHidden(False)
         self.clear_advanced_search_btn.setHidden(False)
-        self.target_search_btn.setHidden(False)
+        self.target_screen_btn.setHidden(False)
     # --------------------------------------------------------------------------
 
     # Search button click function for target search in the Exo-Planet Detection screen
@@ -619,7 +619,7 @@ class Signup(QWidget):
         # Signup logo in signup screen
         # --------------------------------------------------------------------------
         logo = QLabel("",self)
-        logo_pixmap = QPixmap("Images/logo_small.png")
+        logo_pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo_small.png"))
         logo.setPixmap(logo_pixmap)
         logo.setGeometry((width/2)-30,50,50,50)
         # --------------------------------------------------------------------------
@@ -893,7 +893,7 @@ class Select(QWidget):
         # Logout button in select screen
         # --------------------------------------------------------------------------
         self.logout = QPushButton(self)
-        self.logout.setIcon(PySide6.QtGui.QIcon('Images/logout.png'))
+        self.logout.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
         self.logout.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -956,12 +956,15 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
 
         try:
-            info = joblib.load("loader_request.joblib")
+            path_loader_request = str(os.path.join(sys.path[0],'loader_request.joblib'))
+            path_loader = str(os.path.join(sys.path[0],'loader.joblib'))
+            info = joblib.load(path_loader_request)
+
             if len(info) > 1 :
                 self.checkbox.setChecked(False)
                 self.checkbox.setText("Forget me")
                 self.checkbox.clicked.connect(self.forget_me)
-                fernet = joblib.load("loader.joblib")
+                fernet = joblib.load(path_loader)
                 self.email_input.setText(fernet.decrypt(info[0]).decode())
                 self.pass_input.setText(fernet.decrypt(info[1]).decode())
         except:
@@ -985,7 +988,7 @@ class Login(QWidget):
         # Login logo in login screen
         # --------------------------------------------------------------------------
         logo = QLabel("",self)
-        logo_pixmap = QPixmap("Images/logo_small.png")
+        logo_pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo_small.png"))
         logo.setPixmap(logo_pixmap)
         logo.setGeometry((width/2)-30,50,50,50)
         # --------------------------------------------------------------------------
