@@ -20,20 +20,24 @@ import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet
 
+# Credentitials for firebase authentication
 # --------------------------------------------------------------------------
 cred = credentials.Certificate(os.path.join(sys.path[0],'planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
 # --------------------------------------------------------------------------
 
+# Initialize firebase database with cred file
 # --------------------------------------------------------------------------
 firebase_admin.initialize_app(cred , {
     'databaseURL': 'https://planet-hunters-1b294-default-rtdb.firebaseio.com'
 })
 # --------------------------------------------------------------------------
 
+# API key to use google services to login and signup
 # --------------------------------------------------------------------------
 apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
 # --------------------------------------------------------------------------
 
+# Used to send and recievce target search results info from multi threading process
 # --------------------------------------------------------------------------
 target_search_result_scrollable_label = None
 target_search_result = None
@@ -44,6 +48,7 @@ target_search_id = None
 advanced_search_results = None
 # --------------------------------------------------------------------------
 
+# Used to send and recieve sign in info from multi threading process
 # --------------------------------------------------------------------------
 sign_up = False
 signup_email_id = None
@@ -51,39 +56,43 @@ signup_error_msg = ""
 signup_success = False
 # --------------------------------------------------------------------------
 
+# Used to store the load and store account profile picture 
 # --------------------------------------------------------------------------
 avatar = None
 pfp_load = False
-# --------------------------------------------------------------------------
-
-# --------------------------------------------------------------------------
 network_status = False
 # --------------------------------------------------------------------------
 
+# Used to change window dimensions
 # --------------------------------------------------------------------------
 width = 0
 height = 0
 # --------------------------------------------------------------------------
 
+# Used to add data to the database 
 # --------------------------------------------------------------------------
 username = ""
 db_username = ""
 # --------------------------------------------------------------------------
 
+# Used to check if login or signup request has failed
 # --------------------------------------------------------------------------
 login_network_fail = False
 signup_network_fail = False
 # --------------------------------------------------------------------------
 
+# Used to check if there were any problems while downloading lightcurves
 # --------------------------------------------------------------------------
 search_result_isDownloaded_error = True
 # --------------------------------------------------------------------------
 
+# Worker class for multi threading
 # --------------------------------------------------------------------------
 class Worker(QObject):
     finished = Signal()
     progress = Signal(int)
 
+    # Light curve download multi-threading process
     # --------------------------------------------------------------------------
     def run(self):
         global target_search_result
@@ -97,6 +106,7 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
 
+    # Login multi-threading process
     # --------------------------------------------------------------------------
     def login(self):
         global payload
@@ -115,6 +125,7 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
     
+    # Signup multi-threading process
     # --------------------------------------------------------------------------
     def signup(self):
         global signup_error_msg
@@ -160,6 +171,7 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
 
+# Used to create a scrollable text field to show search results
 # --------------------------------------------------------------------------
 class ScrollLabel(QScrollArea):
  
@@ -194,6 +206,7 @@ class ScrollLabel(QScrollArea):
         self.label.setText(text)
 # --------------------------------------------------------------------------
 
+# Exo-Planet detection window
 # --------------------------------------------------------------------------
 class ExoDetection(QWidget):
 
