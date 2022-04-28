@@ -32,6 +32,9 @@ apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
 target_search_results = None
 advanced_search_results = None
 target_search_id = None
+signup_email_id = None
+signup_error_msg = ""
+signup_success = False
 avatar = None
 pfp_load = False
 network_status = False
@@ -40,6 +43,85 @@ height = 0
 sign_up = False
 username = ""
 db_username = ""
+search_result = None
+login_network_fail = False
+signup_network_fail = False
+search_result_isDownloaded_error = True
+
+class Worker(QObject):
+    finished = Signal()
+    progress = Signal(int)
+
+    def run(self):
+        global search_result
+        global search_result_isDownloaded_error
+        try:
+            search_result = lk.search_lightcurve(target_search_id)
+            search_result_isDownloaded_error = False
+            self.finished.emit()
+        except:
+            search_result_isDownloaded_error = True
+            self.finished.emit()
+    
+    def login(self):
+        global payload
+        global r
+        global login_success
+        global login_network_fail
+
+        login_network_fail = False
+        try:
+            r = requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+                                params={"key": apikey},
+                                data=payload)
+            login_network_fail = True
+            self.finished.emit()
+        except:
+            self.finished.emit()
+    
+    def signup(self):
+        global signup_error_msg
+        global signup_email_id
+        global sign_up
+        global r
+        global details
+        global signup_success
+        global signup_network_fail
+
+        signup_success = False
+        signup_network_fail = False
+        try: 
+            # send post request
+            r=requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={}'.format(apikey),data=details)
+
+            #check for errors in result
+            if 'error' in r.json().keys():
+                authenticate =  {'status':'error','message':r.json()['error']['message']}
+                signup_error_msg = authenticate["message"][:43] + "\n" +  authenticate["message"][44:]
+            #if the registration succeeded
+            if 'idToken' in r.json().keys() :
+                signup_success = True
+                authenticate =  {'status':'success','idToken':r.json()['idToken']}
+
+            # Add new user to the database in signup screen
+            # --------------------------------------------------------------------------
+            if authenticate['status'] == 'success' :
+                sign_up = True
+                mail_id = signup_email_id
+                mail_id = mail_id.replace("@","")
+                mail_id = mail_id.replace(".","")
+                ref = db.reference('/users')
+                ref.update({
+                    mail_id : {
+                        'History': { "array" : [0] }
+                    }
+                })
+            # --------------------------------------------------------------------------
+            self.finished.emit()
+        except:
+            signup_network_fail = True
+            self.finished.emit()
+
 
 class ScrollLabel(QScrollArea):
  
@@ -73,15 +155,15 @@ class ScrollLabel(QScrollArea):
         # setting text to the label
         self.label.setText(text)
 
-
 class ExoDetection(QWidget):
 
     # Initialize Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def __init__(self, parent=None):
         super().__init__()
-        self.window = None
         global width,height
+
+        self.window = None
         width = 450
         height = 130
         self.setWindowTitle("Exo Planet Detection - Planet Hunters")
@@ -103,13 +185,21 @@ class ExoDetection(QWidget):
         global avatar
         global pfp_load
         global network_status
+
         
         # Validation label for the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.validation_label = QLabel(self)
-        self.validation_label.setGeometry(10,130,500,30)
+        self.validation_label.setGeometry(10,140,300,30)
         self.validation_label.setStyleSheet("color:#c23b02;")
         # --------------------------------------------------------------------------
+
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setGeometry(10,130,100,10)
+        self.progress_bar.setMaximum(0)
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setHidden(True)
+
 
         # Generating and displaying profile picture for the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
@@ -133,7 +223,7 @@ class ExoDetection(QWidget):
             welcome_txt = "Welcome,\n" + username
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Robotto",25))
+            self.pfp.setFont(QFont("Helvetica",25))
             self.pfp.setGeometry(60,8,30,30)
             welcome_txt = "OOPS!\n" + "Check your connection!"
             self.validation_label.setText("A working network connection is required")
@@ -143,14 +233,14 @@ class ExoDetection(QWidget):
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont("Robotto",12))
+        self.welcome_label.setFont(QFont("Helvetica",12))
         self.welcome_label.setGeometry(90,0,300,50)
         # --------------------------------------------------------------------------
 
         # Target search / Advanced search label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_label = QLabel("Target search",self)
-        self.search_label.setFont(QFont("Robotto"))
+        self.search_label.setFont(QFont("Helvetica"))
         self.search_label.setStyleSheet("color: #ffffff")
         self.search_label.setGeometry(10,45,200,15)
         # --------------------------------------------------------------------------
@@ -158,7 +248,7 @@ class ExoDetection(QWidget):
         # Target search support label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_label = QLabel("Enter Target ID :", self)
-        self.target_label.setFont(QFont("Robotto",12))
+        self.target_label.setFont(QFont("Helvetica",12))
         self.target_label.setGeometry(10,60,200,30)
         # --------------------------------------------------------------------------
         
@@ -201,7 +291,7 @@ class ExoDetection(QWidget):
         # Advanced search parameter input value in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont("Robotto",15))
+        self.adv_search_input.setFont(QFont("Helvetica",15))
         self.adv_search_input.setPlaceholderText("Enter value")
         self.adv_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -218,7 +308,7 @@ class ExoDetection(QWidget):
         # Target ID input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont("Robotto",15))
+        self.target_search_input.setFont(QFont("Helvetica",15))
         self.target_search_input.setPlaceholderText("eg: TIC 42173628")
         self.target_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -234,14 +324,14 @@ class ExoDetection(QWidget):
         # Search output for targed id in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_results = ScrollLabel(self)
-        self.target_search_results.setGeometry(10, 160, 400, 200)
+        self.target_search_results.setGeometry(10, 170, 400, 180)
         self.target_search_results.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_btn = QPushButton(self)
-        self.target_search_btn.setFont(QFont("Robotto",15))
+        self.target_search_btn.setFont(QFont("Helvetica",15))
         self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -260,7 +350,7 @@ class ExoDetection(QWidget):
         # Add button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
-        self.add_advanced_search_btn.setFont(QFont("Robotto",15))
+        self.add_advanced_search_btn.setFont(QFont("Helvetica",15))
         self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -279,7 +369,7 @@ class ExoDetection(QWidget):
         # Search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_advanced_search_btn = QPushButton(self)
-        self.search_advanced_search_btn.setFont(QFont("Robotto",15))
+        self.search_advanced_search_btn.setFont(QFont("Helvetica",15))
         self.search_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.search_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -298,7 +388,7 @@ class ExoDetection(QWidget):
         # Undo button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
-        self.undo_advanced_search_btn.setFont(QFont("Robotto",15))
+        self.undo_advanced_search_btn.setFont(QFont("Helvetica",15))
         self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -317,7 +407,7 @@ class ExoDetection(QWidget):
         # Clear button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
-        self.clear_advanced_search_btn.setFont(QFont("Robotto",15))
+        self.clear_advanced_search_btn.setFont(QFont("Helvetica",15))
         self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -335,7 +425,7 @@ class ExoDetection(QWidget):
 
         # Parameters input validation for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected paramters are displayed below",self)
+        self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected parameters are displayed below",self)
         self.parameter_validation_label.setGeometry(10,170,500,30)
         self.parameter_validation_label.setStyleSheet("color: #edb009")
         self.parameter_validation_label.setHidden(True)
@@ -365,7 +455,7 @@ class ExoDetection(QWidget):
         # Advanced search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.advanced_search_btn = QPushButton("Advanced Search",self)
-        self.advanced_search_btn.setFont(QFont("Robotto",15))
+        self.advanced_search_btn.setFont(QFont("Helvetica",15))
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -383,7 +473,7 @@ class ExoDetection(QWidget):
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_screen_btn = QPushButton("Back To Target Search",self)
-        self.target_screen_btn.setFont(QFont("Robotto",15))
+        self.target_screen_btn.setFont(QFont("Helvetica",15))
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -402,7 +492,7 @@ class ExoDetection(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont("Robotto",12))
+        self.select_label.setFont(QFont("Helvetica",12))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10,360,100,10)
         # --------------------------------------------------------------------------
@@ -410,7 +500,7 @@ class ExoDetection(QWidget):
         # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont("Robotto",15))
+        self.select_input.setFont(QFont("Helvetica",15))
         self.select_input.setPlaceholderText(" eg: 0 or 1 ")
         self.select_input.setStyleSheet("""
                                 QLineEdit {
@@ -426,7 +516,7 @@ class ExoDetection(QWidget):
         # Select button for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
-        self.select_btn.setFont(QFont("Robotto",15))
+        self.select_btn.setFont(QFont("Helvetica",15))
         self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
@@ -439,13 +529,13 @@ class ExoDetection(QWidget):
                                     }
                                 """)
         self.select_btn.setGeometry(100,380,50,30)
-        self.select_btn.clicked.connect(self.search_clicked)
+        self.select_btn.clicked.connect(self.select_clicked)
         # --------------------------------------------------------------------------
 
         # Back button to go to Select screen from the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
-        self.back_btn.setFont(QFont("Robotto",15))
+        self.back_btn.setFont(QFont("Helvetica",15))
         self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
@@ -464,7 +554,7 @@ class ExoDetection(QWidget):
         # Logout button to go to login screen from Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
-        self.lgout_btn.setFont(QFont("Robotto",15))
+        self.lgout_btn.setFont(QFont("Helvetica",15))
         self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
@@ -526,55 +616,120 @@ class ExoDetection(QWidget):
         self.target_screen_btn.setHidden(False)
     # --------------------------------------------------------------------------
 
+
     # Search button click function for target search in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def search_clicked(self):
         global target_search_results
         global target_search_id
-        try:
-            self.validation_label.setText("Searching..")
-            self.validation_label.setStyleSheet("color: #edb009;")
+        global search_result
+        global search_result_isDownloaded_error
 
-            if self.target_search_input.text().strip() == "" :
-                self.setFixedHeight(170)
-                self.validation_label.setText("Enter Target ID to search.\nTo search with other parameters use advanced search")
-            else:
-                self.validation_label.setText("Here's what we found")
-                self.validation_label.setStyleSheet("color: #edb009;")
+        self.setFixedHeight(180)
+        self.validation_label.setText("Searching..")
+        self.validation_label.setStyleSheet("color: #edb009;")
 
-                search_result = lk.search_lightcurve(self.target_search_input.text())
-                target_search_results = search_result
-                target_search_id = self.target_search_input.text()
-                self.setFixedHeight(420)
-                self.target_search_results.setText(str(search_result))
-                self.target_search_results.setHidden(False)
-        except:
-            self.setFixedHeight(170)
-            self.validation_label.setText("A working network connection is required")
-            self.validation_label.setStyleSheet("color: #c23b02;")
-    
-            # Add search to the database under the user
-            '''
-            ## Adding search to database
-            hist_array = []
-            ref = db.reference('/users')
-            users_ref = ref.child(db_username)
-            user_data = users_ref.get()
-            hist_array = user_data['History']['array']
+        self.progress_bar.setHidden(False)
 
-            if hist_array[0] == 0 :
-                hist_array[0] = self.target_search_input.text()
-            else:
-                hist_array.append(self.target_search_input.text())
+        if self.target_search_input.text().strip() == "" :
+            self.setFixedHeight(180)
+            self.validation_label.setText("!! Enter Target ID to search.\nTo search with other parameters use advanced search !!")
+            self.progress_bar.setHidden(True)
+        else:
+            target_search_id = self.target_search_input.text()   
+            self.target_search_btn.setEnabled(False)
+            self.advanced_search_btn.setEnabled(False)
             
-            users_ref.update({
+            
+            # Step 2: Create a QThread object
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # Step 6: Start the thread
+            self.thread.start()
+            #target_search_results = search_result
+            self.thread.finished.connect(self.update_search_results)
 
-                'History': {"array" : hist_array }
-            })
-            '''
 
+    def update_search_results(self):
+        global search_result_isDownloaded_error
+
+        self.progress_bar.setHidden(True)
+        if search_result_isDownloaded_error == False:
+            self.validation_label.setText("Here's what we found")
+            self.validation_label.setStyleSheet("color: #edb009;")
+            self.setFixedHeight(420)
+            self.target_search_results.setText(str(search_result))
+            self.target_search_results.setHidden(False) 
+        else:
+            self.target_search_results.setHidden(True)
+            self.setFixedHeight(170)
+            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setStyleSheet("color: #c23b02;")  
+
+        self.target_search_btn.setEnabled(True)
+        self.advanced_search_btn.setEnabled(True) 
+        
+        # Add search to the database under the user
+        '''
+        ## Adding search to database
+        hist_array = []
+        ref = db.reference('/users')
+        users_ref = ref.child(db_username)
+        user_data = users_ref.get()
+        hist_array = user_data['History']['array']
+
+        if hist_array[0] == 0 :
+            hist_array[0] = self.target_search_input.text()
+        else:
+            hist_array.append(self.target_search_input.text())
+        
+        users_ref.update({
+
+            'History': {"array" : hist_array }
+        })
+        '''
     # --------------------------------------------------------------------------
     
+    def select_clicked(self):
+        select_valid = True
+
+        try :
+            if len(target_search_results) < 1 :
+                self.validation_label.setText("!! No items to select from, search again !!")
+                select_valid = False
+
+        except :
+            select_valid = False
+            self.validation_label.setText("!! No items to select from, search again !!")
+        
+        if select_valid == True:
+            if self.select_input.text().strip() == "" :
+                select_valid = False
+                self.validation_label.setText("!! Please input a valid # number !!")
+
+        if select_valid == True:
+            try:
+                select_input_int = int(self.select_input.text().strip())
+            except:
+                select_valid = False
+                self.validation_label.setText("!! Please input an integer !!")
+        
+        if select_valid == True:
+            try:
+                lightcurve = target_search_results[int(self.select_input.text().strip())].download()
+                #lightcurve = target_search_results.download_all()
+            except:
+                self.validation_label.setText("!! Please select from available # numbers !!")
+        
+        
     # logout button click function to take to the login screen from the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def login_click(self):
@@ -621,21 +776,21 @@ class Signup(QWidget):
         logo = QLabel("",self)
         logo_pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo_small.png"))
         logo.setPixmap(logo_pixmap)
-        logo.setGeometry((width/2)-30,50,50,50)
+        logo.setGeometry((width/2)-30,40,50,50)
         # --------------------------------------------------------------------------
 
         # Signup title in signup screen
         # --------------------------------------------------------------------------
         self.welcome_msg = QLabel("          Sign Up to Planet Hunters",self)
-        self.welcome_msg.setFont(QFont("Robotto",20))
-        self.welcome_msg.setGeometry((width/2)-150,100,300,30)
+        self.welcome_msg.setFont(QFont("Helvetica",20))
+        self.welcome_msg.setGeometry((width/2)-170,100,300,30)
         # --------------------------------------------------------------------------
         
         # Input email in signup screen
         # --------------------------------------------------------------------------
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText(" Email")
-        self.email_input.setGeometry((width/2)-150,150,300,30)
+        self.email_input.setGeometry((width/2)-150,140,300,30)
         # --------------------------------------------------------------------------
 
         # Input password in signup screen
@@ -643,7 +798,7 @@ class Signup(QWidget):
         self.pass_input = QLineEdit(self)
         self.pass_input.setPlaceholderText(" Password")
         self.pass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.pass_input.setGeometry((width/2)-150,200,300,30)
+        self.pass_input.setGeometry((width/2)-150,190,300,30)
         # --------------------------------------------------------------------------
 
         # Re-Input password in signup screen
@@ -651,15 +806,15 @@ class Signup(QWidget):
         self.repass_input = QLineEdit(self)
         self.repass_input.setPlaceholderText(" Re-enter Password")
         self.repass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.repass_input.setGeometry((width/2)-150,250,300,30)
+        self.repass_input.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
 
         # Signup validation label in signup screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Robotto",12))
+        self.validation_msg.setFont(QFont("Helvetica",12))
         self.validation_msg.setStyleSheet("color: #e84f61")
-        self.validation_msg.setGeometry((width/2)-150,275,300,25)
+        self.validation_msg.setGeometry((width/2)-150,274,300,25)
         # --------------------------------------------------------------------------
 
         # Signup button in signup screen
@@ -675,7 +830,7 @@ class Signup(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.signup_btn.setGeometry((width/2)-150,300,300,30)
+        self.signup_btn.setGeometry((width/2)-150,310,300,30)
         self.signup_btn.clicked.connect(self.signup_click)
         # --------------------------------------------------------------------------
 
@@ -697,59 +852,96 @@ class Signup(QWidget):
         self.login_btn.clicked.connect(self.login_click)
         # --------------------------------------------------------------------------
 
-    # Function to validate sign up with google api in signup screen
-    # --------------------------------------------------------------------------
-    def NewUser(self,email,password):
-        details={
-            'email':email,
-            'password':password,
-            'returnSecureToken': True
-        }
-        # send post request
-        r=requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={}'.format(apikey),data=details)
-        #check for errors in result
-        if 'error' in r.json().keys():
-            return {'status':'error','message':r.json()['error']['message']}
-        #if the registration succeeded
-        if 'idToken' in r.json().keys() :
-                return {'status':'success','idToken':r.json()['idToken']}
-    # --------------------------------------------------------------------------
+        # Progress bar in signup screen
+        # --------------------------------------------------------------------------
+        self.pbar = QProgressBar(self)
+        self.pbar.setMaximum(0)
+        self.pbar.setMinimum(0)
+        self.pbar.setGeometry((width/2)-150,390,300,10)
+        self.pbar.setHidden(True)
+        # --------------------------------------------------------------------------
+
+        # Progress bar label in login screen
+        # --------------------------------------------------------------------------
+        self.login_label = QLabel("Signing you up",self)
+        self.login_label.setGeometry((width/2)-50,410,300,30)
+        self.login_label.setHidden(True)
+        # --------------------------------------------------------------------------
 
     # Signup button click function in signup screen
     # --------------------------------------------------------------------------
     def signup_click(self):
-            global window
-            global sign_up
-            try:
-                if self.pass_input.text() != self.repass_input.text() :
-                    self.validation_msg.setText("Passwords do not match, please try again")
-                else:
-                    authenticate = self.NewUser(self.email_input.text(),self.pass_input.text())
+        global window
+        global sign_up
+        global details
+        global r
 
-                    # Add new user to the database in signup screen
-                    # --------------------------------------------------------------------------
-                    if authenticate['status'] == 'success' :
-                        sign_up = True
-                        mail_id = self.email_input.text()
-                        mail_id = mail_id.replace("@","")
-                        mail_id = mail_id.replace(".","")
-                        ref = db.reference('/users')
-                        ref.update({
-                            mail_id : {
-                                'History': { "array" : [0] }
-                            }
-                        })
-                    # --------------------------------------------------------------------------
-                
-                        if self.window is None:
-                            window.close()
-                            window = Login()
-                        window.show()
-                    else:
-                        self.validation_msg.setText(authenticate['message']) 
-            except:
-                self.validation_msg.setText("Please connect to a working internet connection")  
+        self.pbar.setHidden(False)
+        self.login_label.setHidden(False)
+        if self.email_input.text().strip == "":
+            self.validation_msg.setText("No email input, please try again")
+            self.pbar.setHidden(True)
+            self.login_label.setHidden(True)
+        elif self.pass_input.text() != self.repass_input.text() :
+            self.validation_msg.setText("Passwords do not match, please try again")
+            self.pbar.setHidden(True)
+            self.login_label.setHidden(True)
+        else:
+            details={
+                'email':self.email_input.text(),
+                'password':self.pass_input.text(),
+                'returnSecureToken': True
+            }
+
+            # Multi threading the login request in login screen
+            # --------------------------------------------------------------------------
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(self.worker.signup)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # Step 6: Start the thread
+            self.thread.start()
+
+            # Block buttons till login request complete
+            self.login_btn.setEnabled(False)
+            self.signup_btn.setEnabled(False)
+
+            self.thread.finished.connect(self.signup_continue)
+            # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
+    
+    # Sign up continue after multi threading process complete
+    # --------------------------------------------------------------------------
+    def signup_continue(self):
+        global window
+        global signup_error_msg
+        global signup_network_fail
+
+        if signup_network_fail == True:
+            self.validation_msg.setText("Please connect to a working internet connection")
+            self.pbar.setHidden(True)
+            self.login_label.setHidden(True)
+            self.login_btn.setEnabled(True)
+            self.signup_btn.setEnabled(True)
+
+        elif signup_success == True:
+            if self.window is None:
+                window.close()
+                window = Login()
+            window.show()
+        else:
+            self.validation_msg.setText(signup_error_msg)
+            self.pbar.setHidden(True)
+            self.login_label.setHidden(True)
+            self.login_btn.setEnabled(True)
+            self.signup_btn.setEnabled(True) 
+        
 
     # Login button click function in signup screen
     # --------------------------------------------------------------------------
@@ -794,7 +986,7 @@ class Select(QWidget):
         # Welcome label to greet user in select screen
         # --------------------------------------------------------------------------
         self.hello_label = QLabel(self)
-        self.hello_label.setFont(QFont("Robotto",12))
+        self.hello_label.setFont(QFont("Helvetica",12))
         self.hello_label.setGeometry((width/2)-100,0,300,50)
         # --------------------------------------------------------------------------
 
@@ -821,7 +1013,7 @@ class Select(QWidget):
             self.hello_label.setText(hello_txt)
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Robotto",25))
+            self.pfp.setFont(QFont("Helvetica",25))
             self.pfp.setGeometry((width/2)-150,8,30,30)
             hello_txt = "OOPS!\n" + "Check your connection!"
             self.hello_label.setText(hello_txt)
@@ -831,14 +1023,14 @@ class Select(QWidget):
         # Habitability title in select screen
         # --------------------------------------------------------------------------
         self.hab_title = QLabel("Habitability Detection",self)
-        self.hab_title.setFont(QFont("Robotto",20))
+        self.hab_title.setFont(QFont("Helvetica",20))
         self.hab_title.setGeometry((width/2)-150,60,300,30)
         # --------------------------------------------------------------------------
         
         # Habitability description in select screen
         # --------------------------------------------------------------------------
         self.hab_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.hab_desc.setFont(QFont("Robotto",12))
+        self.hab_desc.setFont(QFont("Helvetica",12))
         self.hab_desc.setGeometry((width/2)-150,90,300,110)
         # --------------------------------------------------------------------------
         
@@ -862,14 +1054,14 @@ class Select(QWidget):
         # Exo-Planet detection title in select screen
         # --------------------------------------------------------------------------
         self.exo_title = QLabel("Exoplanet Detection",self)
-        self.exo_title.setFont(QFont("Robotto",20))
+        self.exo_title.setFont(QFont("Helvetica",20))
         self.exo_title.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
         
         # Exo-Planet detecttion description in select screen
         # --------------------------------------------------------------------------
         self.exo_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.exo_desc.setFont(QFont("Robotto",12))
+        self.exo_desc.setFont(QFont("Helvetica",12))
         self.exo_desc.setGeometry((width/2)-150,270,300,110)
         # --------------------------------------------------------------------------
 
@@ -998,13 +1190,13 @@ class Login(QWidget):
 
         if (sign_up == False):
             self.welcome_msg = QLabel("           Log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-150,100,300,30)
-            self.welcome_msg.setFont(QFont("Robotto",20))
+            self.welcome_msg.setGeometry((width/2)-170,110,300,30)
+            self.welcome_msg.setFont(QFont("Helvetica",20))
         else:
             logo.setGeometry((width/2)-30,20,50,50)
             self.welcome_msg = QLabel("            Thank you for signing up!\n  you can now log In to Planet Hunters",self)
             self.welcome_msg.setGeometry((width/2)-150,80,300,60)
-            self.welcome_msg.setFont(QFont("Robotto",18))
+            self.welcome_msg.setFont(QFont("Helvetica",18))
             sign_up = False
         # --------------------------------------------------------------------------
 
@@ -1035,7 +1227,7 @@ class Login(QWidget):
         # Login validation label in login screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Robotto",12))
+        self.validation_msg.setFont(QFont("Helvetica",12))
         self.validation_msg.setStyleSheet("color: #e84f61")
         self.validation_msg.setGeometry((width/2)-150,225,300,30)
         # --------------------------------------------------------------------------
@@ -1082,30 +1274,85 @@ class Login(QWidget):
         self.signup_btn.clicked.connect(self.signup_click)
         # --------------------------------------------------------------------------
 
+        # Progress bar in login screen
+        # --------------------------------------------------------------------------
+        self.pbar = QProgressBar(self)
+        self.pbar.setMaximum(0)
+        self.pbar.setMinimum(0)
+        self.pbar.setGeometry((width/2)-150,390,300,10)
+        self.pbar.setHidden(True)
+        # --------------------------------------------------------------------------
+
+        # Progress bar label in login screen
+        # --------------------------------------------------------------------------
+        self.login_label = QLabel("Logging you in",self)
+        self.login_label.setGeometry((width/2)-50,400,300,30)
+        self.login_label.setHidden(True)
+        # --------------------------------------------------------------------------
+
+
     # Login button click function in login screen
     # --------------------------------------------------------------------------
     def login_click(self):
+        global payload
+
+        self.pbar.setHidden(False)
+        self.login_label.setHidden(False)
+            
+        # Login validation with google api in login screen
+        # --------------------------------------------------------------------------
+        payload = json.dumps({
+        "email": self.email_input.text(),
+        "password": self.pass_input.text(),
+        "returnSecureToken": True
+        })
+
+        # Multi threading the login request in login screen
+        # --------------------------------------------------------------------------
+        self.thread = QThread()
+        # Step 3: Create a worker object
+        self.worker = Worker()
+        # Step 4: Move worker to the thread
+        self.worker.moveToThread(self.thread)
+        # Step 5: Connect signals and slots
+        self.thread.started.connect(self.worker.login)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        # Step 6: Start the thread
+        self.thread.start()
+
+        # Block buttons till login request complete
+        self.login_btn.setEnabled(False)
+        self.signup_btn.setEnabled(False)
+
+        self.thread.finished.connect(self.login_continue)
+        # --------------------------------------------------------------------------
+
+            
+    # Complete login after multithreading complete in login screen
+    # --------------------------------------------------------------------------
+    def login_continue(self):
         global window 
         global username 
         global db_username
+        global payload
+        global r
+        global window
+        global login_network_fail
+
         lines_w = []
-        try:
-            
-            # Login validation with google api in login screen
-            # --------------------------------------------------------------------------
-            payload = json.dumps({
-            "email": self.email_input.text(),
-            "password": self.pass_input.text(),
-            "returnSecureToken": True
-            })
-
-            r = requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
-                                params={"key": apikey},
-                                data=payload)
-
+        self.login_btn.setEnabled(True)
+        self.signup_btn.setEnabled(True)
+        if login_network_fail == False :
+            self.validation_msg.setText("Please connect to a working internet connection") 
+            self.pbar.setHidden(True)
+            self.login_label.setHidden(True)
+        else:
             if 'error' in r.json().keys():
                 self.validation_msg.setText(" Invalid email/password")
-                return {'status':'error','message':r.json()['error']['message']}
+                self.pbar.setHidden(True)
+                self.login_label.setHidden(True)
             #if the login succeeded
             if 'idToken' in r.json().keys() :
                 username = self.email_input.text()
@@ -1127,12 +1374,9 @@ class Login(QWidget):
                     window.close()
                     window = Select()
                 window.show()
-                return {'status':'success','idToken':r.json()['idToken']}
+    # --------------------------------------------------------------------------
 
-            return r.json()
-        except:
-            self.validation_msg.setText("Please connect to a working internet connection")  
-    
+
     # Signup button click function in login screen
     # --------------------------------------------------------------------------
     def signup_click(self):
@@ -1141,12 +1385,17 @@ class Login(QWidget):
             window.close()
             window = Signup()
         window.show()
+    # --------------------------------------------------------------------------
         
 
 # Application start
 # --------------------------------------------------------------------------  
 app = QApplication([])
+pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
+splash = QSplashScreen(pixmap)
+splash.show()
 window = Login()
 window.show()
+splash.finish(window)
 sys.exit(app.exec())
 
