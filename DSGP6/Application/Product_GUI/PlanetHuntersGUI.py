@@ -29,7 +29,7 @@ firebase_admin.initialize_app(cred , {
 
 apikey='AIzaSyAqvXwzaDvA3F3xkhHzbAGWmswYu5NDAds'# the web api key
 
-target_search_results = None
+target_search_result_scrollable_label = None
 advanced_search_results = None
 target_search_id = None
 signup_email_id = None
@@ -43,7 +43,7 @@ height = 0
 sign_up = False
 username = ""
 db_username = ""
-search_result = None
+target_search_result = None
 login_network_fail = False
 signup_network_fail = False
 search_result_isDownloaded_error = True
@@ -53,10 +53,10 @@ class Worker(QObject):
     progress = Signal(int)
 
     def run(self):
-        global search_result
+        global target_search_result
         global search_result_isDownloaded_error
         try:
-            search_result = lk.search_lightcurve(target_search_id)
+            target_search_result = lk.search_lightcurve(target_search_id)
             search_result_isDownloaded_error = False
             self.finished.emit()
         except:
@@ -323,9 +323,9 @@ class ExoDetection(QWidget):
 
         # Search output for targed id in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.target_search_results = ScrollLabel(self)
-        self.target_search_results.setGeometry(10, 170, 400, 180)
-        self.target_search_results.setHidden(True)
+        self.target_search_result_scrollable_label = ScrollLabel(self)
+        self.target_search_result_scrollable_label.setGeometry(10, 170, 400, 180)
+        self.target_search_result_scrollable_label.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Search button for target search in the Exo-Planet Detection screen
@@ -571,10 +571,10 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         try:
             self.target_search_input.setText(target_search_id)
-            if len(target_search_results) > 0 :
+            if len(target_search_result) > 0 :
                 self.setFixedHeight(420)
-                self.target_search_results.setText(str(target_search_results))
-                self.target_search_results.setHidden(False)
+                self.target_search_result_scrollable_label.setText(str(target_search_result))
+                self.target_search_result_scrollable_label.setHidden(False)
         except:
             pass
     
@@ -598,7 +598,7 @@ class ExoDetection(QWidget):
         self.select_btn.setHidden(True)
         self.parameter_validation_label.setHidden(False)
         self.selected_parameters_label.setHidden(False)
-        self.target_search_results.setHidden(True)
+        self.target_search_result_scrollable_label.setHidden(True)
         self.adv_selected_paramters.setHidden(False)
         self.validation_label.setText("")
         self.target_search_input.setHidden(True)
@@ -620,9 +620,9 @@ class ExoDetection(QWidget):
     # Search button click function for target search in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def search_clicked(self):
-        global target_search_results
+        global target_search_result_scrollable_label
         global target_search_id
-        global search_result
+        global target_search_result
         global search_result_isDownloaded_error
 
         self.setFixedHeight(180)
@@ -654,7 +654,6 @@ class ExoDetection(QWidget):
             self.thread.finished.connect(self.thread.deleteLater)
             # Step 6: Start the thread
             self.thread.start()
-            #target_search_results = search_result
             self.thread.finished.connect(self.update_search_results)
 
 
@@ -666,10 +665,10 @@ class ExoDetection(QWidget):
             self.validation_label.setText("Here's what we found")
             self.validation_label.setStyleSheet("color: #edb009;")
             self.setFixedHeight(420)
-            self.target_search_results.setText(str(search_result))
-            self.target_search_results.setHidden(False) 
+            self.target_search_result_scrollable_label.setText(str(target_search_result))
+            self.target_search_result_scrollable_label.setHidden(False) 
         else:
-            self.target_search_results.setHidden(True)
+            self.target_search_result_scrollable_label.setHidden(True)
             self.setFixedHeight(170)
             self.validation_label.setText("!! A working network connection is required !!")
             self.validation_label.setStyleSheet("color: #c23b02;")  
@@ -700,9 +699,9 @@ class ExoDetection(QWidget):
     
     def select_clicked(self):
         select_valid = True
-
+        self.validation_label.setStyleSheet("color: #edb009;")
         try :
-            if len(target_search_results) < 1 :
+            if len(target_search_result) < 1 :
                 self.validation_label.setText("!! No items to select from, search again !!")
                 select_valid = False
 
@@ -724,8 +723,8 @@ class ExoDetection(QWidget):
         
         if select_valid == True:
             try:
-                lightcurve = target_search_results[int(self.select_input.text().strip())].download()
-                #lightcurve = target_search_results.download_all()
+                lightcurve = target_search_result[int(self.select_input.text().strip())].download()
+
             except:
                 self.validation_label.setText("!! Please select from available # numbers !!")
         
