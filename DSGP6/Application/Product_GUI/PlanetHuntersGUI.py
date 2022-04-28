@@ -1,6 +1,3 @@
-from curses import noecho
-from telnetlib import SE
-from turtle import width
 import PySide6
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
