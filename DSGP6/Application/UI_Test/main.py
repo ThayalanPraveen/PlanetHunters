@@ -300,6 +300,7 @@ while True:
                     users_ref = ref.child(username)
                     user_data = users_ref.get()
                     hist_array = user_data['History']['array']
+                    
                     if hist_array[0] == 0 :
                         hist_array[0] = T_name
                     else:
