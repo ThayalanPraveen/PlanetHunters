@@ -247,11 +247,14 @@ class ExoDetection(QWidget):
         self.validation_label.setStyleSheet("color:#c23b02;")
         # --------------------------------------------------------------------------
 
-        self.progress_bar = QProgressBar(self)
-        self.progress_bar.setGeometry(10,130,100,10)
-        self.progress_bar.setMaximum(0)
-        self.progress_bar.setMinimum(0)
-        self.progress_bar.setHidden(True)
+        # progress_bar_exo_detection in Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.progress_bar_exo_detection = QProgressBar(self)
+        self.progress_bar_exo_detection.setGeometry(10,130,150,10)
+        self.progress_bar_exo_detection.setMaximum(0)
+        self.progress_bar_exo_detection.setMinimum(0)
+        self.progress_bar_exo_detection.setHidden(True)
+        # --------------------------------------------------------------------------
 
 
         # Generating and displaying profile picture for the Exo-Planet Detection screen
@@ -682,12 +685,12 @@ class ExoDetection(QWidget):
         self.validation_label.setText("Searching..")
         self.validation_label.setStyleSheet("color: #edb009;")
 
-        self.progress_bar.setHidden(False)
+        self.progress_bar_exo_detection.setHidden(False)
 
         if self.target_search_input.text().strip() == "" :
             self.setFixedHeight(180)
             self.validation_label.setText("!! Enter Target ID to search.\nTo search with other parameters use advanced search !!")
-            self.progress_bar.setHidden(True)
+            self.progress_bar_exo_detection.setHidden(True)
         else:
             target_search_id = self.target_search_input.text()   
             self.target_search_btn.setEnabled(False)
@@ -713,7 +716,7 @@ class ExoDetection(QWidget):
     def update_search_results(self):
         global search_result_isDownloaded_error
 
-        self.progress_bar.setHidden(True)
+        self.progress_bar_exo_detection.setHidden(True)
         if search_result_isDownloaded_error == False:
             self.validation_label.setText("Here's what we found")
             self.validation_label.setStyleSheet("color: #edb009;")
@@ -907,11 +910,11 @@ class Signup(QWidget):
 
         # Progress bar in signup screen
         # --------------------------------------------------------------------------
-        self.pbar = QProgressBar(self)
-        self.pbar.setMaximum(0)
-        self.pbar.setMinimum(0)
-        self.pbar.setGeometry((width/2)-150,390,300,10)
-        self.pbar.setHidden(True)
+        self.progress_bar_login = QProgressBar(self)
+        self.progress_bar_login.setMaximum(0)
+        self.progress_bar_login.setMinimum(0)
+        self.progress_bar_login.setGeometry((width/2)-150,390,300,10)
+        self.progress_bar_login.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Progress bar label in login screen
@@ -926,18 +929,19 @@ class Signup(QWidget):
     def signup_click(self):
         global window
         global sign_up
+        global signup_email_id
         global details
         global r
 
-        self.pbar.setHidden(False)
+        self.progress_bar_login.setHidden(False)
         self.login_label.setHidden(False)
         if self.email_input.text().strip == "":
             self.validation_msg.setText("No email input, please try again")
-            self.pbar.setHidden(True)
+            self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
         elif self.pass_input.text() != self.repass_input.text() :
             self.validation_msg.setText("Passwords do not match, please try again")
-            self.pbar.setHidden(True)
+            self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
         else:
             details={
@@ -945,6 +949,7 @@ class Signup(QWidget):
                 'password':self.pass_input.text(),
                 'returnSecureToken': True
             }
+            signup_email_id = self.email_input.text()
 
             # Multi threading the login request in login screen
             # --------------------------------------------------------------------------
@@ -978,7 +983,7 @@ class Signup(QWidget):
 
         if signup_network_fail == True:
             self.validation_msg.setText("Please connect to a working internet connection")
-            self.pbar.setHidden(True)
+            self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
             self.login_btn.setEnabled(True)
             self.signup_btn.setEnabled(True)
@@ -990,7 +995,7 @@ class Signup(QWidget):
             window.show()
         else:
             self.validation_msg.setText(signup_error_msg)
-            self.pbar.setHidden(True)
+            self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
             self.login_btn.setEnabled(True)
             self.signup_btn.setEnabled(True) 
@@ -1247,8 +1252,8 @@ class Login(QWidget):
             self.welcome_msg.setFont(QFont("Helvetica",20))
         else:
             logo.setGeometry((width/2)-30,20,50,50)
-            self.welcome_msg = QLabel("            Thank you for signing up!\n  you can now log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-150,80,300,60)
+            self.welcome_msg = QLabel("           Thank you for signing up!\n  you can now log In to Planet Hunters",self)
+            self.welcome_msg.setGeometry((width/2)-160,80,350,60)
             self.welcome_msg.setFont(QFont("Helvetica",18))
             sign_up = False
         # --------------------------------------------------------------------------
@@ -1305,7 +1310,7 @@ class Login(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.login_btn.setGeometry((width/2)-150,300,300,30)
+        self.login_btn.setGeometry((width/2)-150,310,300,30)
         self.login_btn.clicked.connect(self.login_click)
         # --------------------------------------------------------------------------
         
@@ -1329,11 +1334,11 @@ class Login(QWidget):
 
         # Progress bar in login screen
         # --------------------------------------------------------------------------
-        self.pbar = QProgressBar(self)
-        self.pbar.setMaximum(0)
-        self.pbar.setMinimum(0)
-        self.pbar.setGeometry((width/2)-150,390,300,10)
-        self.pbar.setHidden(True)
+        self.progress_bar_login = QProgressBar(self)
+        self.progress_bar_login.setMaximum(0)
+        self.progress_bar_login.setMinimum(0)
+        self.progress_bar_login.setGeometry((width/2)-150,390,300,10)
+        self.progress_bar_login.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Progress bar label in login screen
@@ -1349,7 +1354,7 @@ class Login(QWidget):
     def login_click(self):
         global payload
 
-        self.pbar.setHidden(False)
+        self.progress_bar_login.setHidden(False)
         self.login_label.setHidden(False)
             
         # Login validation with google api in login screen
@@ -1399,12 +1404,12 @@ class Login(QWidget):
         self.signup_btn.setEnabled(True)
         if login_network_fail == False :
             self.validation_msg.setText("Please connect to a working internet connection") 
-            self.pbar.setHidden(True)
+            self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
         else:
             if 'error' in r.json().keys():
                 self.validation_msg.setText(" Invalid email/password")
-                self.pbar.setHidden(True)
+                self.progress_bar_login.setHidden(True)
                 self.login_label.setHidden(True)
             #if the login succeeded
             if 'idToken' in r.json().keys() :
