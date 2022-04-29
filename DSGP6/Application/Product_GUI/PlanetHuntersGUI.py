@@ -1,3 +1,4 @@
+import time
 import PySide6
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
@@ -11,7 +12,6 @@ import lightkurve as lk
 import matplotlib.pyplot
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import requests
 import firebase_admin
 from firebase_admin import db
@@ -19,6 +19,10 @@ import sys
 import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet
+from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
 
 # Credentitials for firebase authentication
 # --------------------------------------------------------------------------
@@ -84,6 +88,12 @@ signup_network_fail = False
 # Used to check if there were any problems while downloading lightcurves
 # --------------------------------------------------------------------------
 search_result_isDownloaded_error = True
+search_result_select_isDownloaded_error = True
+# --------------------------------------------------------------------------
+
+# Store the downloaded lightcurve from the multi-thread process
+# --------------------------------------------------------------------------
+lightcurve = None
 # --------------------------------------------------------------------------
 
 # Worker class for multi threading
@@ -91,10 +101,25 @@ search_result_isDownloaded_error = True
 class Worker(QObject):
     finished = Signal()
     progress = Signal(int)
-
     # Light curve download multi-threading process
     # --------------------------------------------------------------------------
-    def run(self):
+    def download_lightcurve(self):
+        global lightcurve
+        global select_input
+        global target_search_result
+        global search_result_select_isDownloaded_error
+        try:
+            lightcurve = target_search_result[int(select_input)].download()
+            search_result_select_isDownloaded_error = False
+            self.finished.emit()
+        except:
+            search_result_select_isDownloaded_error = True
+            self.finished.emit()
+    # --------------------------------------------------------------------------
+
+    # Light curve search download multi-threading process
+    # --------------------------------------------------------------------------
+    def dowload_search_results(self):
         global target_search_result
         global search_result_isDownloaded_error
         try:
@@ -171,6 +196,69 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
 
+class MplCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+# Used to create a plot area to display the plot
+# --------------------------------------------------------------------------
+class PlotArea(QScrollArea):
+ 
+    # constructor
+    def __init__(self, *args, **kwargs):
+        QScrollArea.__init__(self, *args, **kwargs)
+ 
+        # making widget resizable
+        self.setWidgetResizable(True)
+ 
+        # making qwidget object
+        content = QWidget(self)
+        self.setWidget(content)
+ 
+        # vertical box layout
+        lay = QVBoxLayout(content)
+ 
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+
+        self.toolbar = NavigationToolbar(self.sc, self)
+
+        lay.addWidget(self.toolbar)
+        
+        lay.addWidget(self.sc)
+
+        self.x_axis  = []
+        self.y_axis = []
+
+    def class_to_array(self):
+
+        self.x_axis = []
+        self.y_axis = []
+        
+        for x in lightcurve.flux:
+            self.y_axis.append(x.value)
+            
+        for x in lightcurve.time:
+            self.x_axis.append(x.value)
+            
+    
+    def update_plot(self):
+        global lightcurve
+        self.class_to_array()
+        if len(lightcurve) > 0:
+            # Drop off the first y element, append a new one.
+            self.sc.axes.cla()  # Clear the canvas.
+            self.sc.axes.plot(self.x_axis , self.y_axis)
+            
+            # Trigger the canvas to update and redraw.
+            self.sc.draw()
+        
+
+# --------------------------------------------------------------------------
+
 # Used to create a scrollable text field to show search results
 # --------------------------------------------------------------------------
 class ScrollLabel(QScrollArea):
@@ -218,7 +306,7 @@ class ExoDetection(QWidget):
 
         self.window = None
         width = 450
-        height = 130
+        height = 180
         self.setWindowTitle("Exo Planet Detection - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
@@ -239,6 +327,12 @@ class ExoDetection(QWidget):
         global pfp_load
         global network_status
 
+        # Plot Area to display the plots after selecting a sector
+        # --------------------------------------------------------------------------
+        self.target_plot = PlotArea(self)
+        self.target_plot.setGeometry(460, -3, 830, 420)
+        self.target_plot.setHidden(True)
+        # --------------------------------------------------------------------------
         
         # Validation label for the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
@@ -681,14 +775,13 @@ class ExoDetection(QWidget):
         global target_search_result
         global search_result_isDownloaded_error
 
-        self.setFixedHeight(180)
         self.validation_label.setText("Searching..")
         self.validation_label.setStyleSheet("color: #edb009;")
 
         self.progress_bar_exo_detection.setHidden(False)
 
         if self.target_search_input.text().strip() == "" :
-            self.setFixedHeight(180)
+            #self.setFixedHeight(180)
             self.validation_label.setText("!! Enter Target ID to search.\nTo search with other parameters use advanced search !!")
             self.progress_bar_exo_detection.setHidden(True)
         else:
@@ -704,7 +797,7 @@ class ExoDetection(QWidget):
             # Step 4: Move worker to the thread
             self.worker.moveToThread(self.thread)
             # Step 5: Connect signals and slots
-            self.thread.started.connect(self.worker.run)
+            self.thread.started.connect(self.worker.dowload_search_results)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
             self.thread.finished.connect(self.thread.deleteLater)
@@ -715,6 +808,8 @@ class ExoDetection(QWidget):
 
     def update_search_results(self):
         global search_result_isDownloaded_error
+        self.validation_label.setGeometry(10,140,300,30)
+        self.validation_label.setStyleSheet("color:#c23b02;")
 
         self.progress_bar_exo_detection.setHidden(True)
         if search_result_isDownloaded_error == False:
@@ -754,7 +849,10 @@ class ExoDetection(QWidget):
     # --------------------------------------------------------------------------
     
     def select_clicked(self):
+        global lightcurve
+        global select_input
         select_valid = True
+        self.validation_label.setGeometry(10,140,300,30)
         self.validation_label.setStyleSheet("color: #edb009;")
         try :
             if len(target_search_result) < 1 :
@@ -779,12 +877,55 @@ class ExoDetection(QWidget):
         
         if select_valid == True:
             try:
-                lightcurve = target_search_result[int(self.select_input.text().strip())].download()
+                self.target_search_btn.setEnabled(False)
+                self.advanced_search_btn.setEnabled(False)
+                self.select_btn.setEnabled(False) 
+
+                select_input = self.select_input.text().strip()
+
+                # Step 2: Create a QThread object
+                self.thread = QThread()
+                # Step 3: Create a worker object
+                self.worker = Worker()
+                # Step 4: Move worker to the thread
+                self.worker.moveToThread(self.thread)
+                # Step 5: Connect signals and slots
+                self.thread.started.connect(self.worker.download_lightcurve)
+                self.worker.finished.connect(self.thread.quit)
+                self.worker.finished.connect(self.worker.deleteLater)
+                self.thread.finished.connect(self.thread.deleteLater)
+                # Step 6: Start the thread
+                self.thread.start()
+                self.thread.finished.connect(self.update_plot)
+
+                self.progress_bar_exo_detection.setGeometry(160,370,144,30)
+                self.progress_bar_exo_detection.setHidden(False)
+                self.validation_label.setGeometry(160,387,300,30)
+                self.validation_label.setText("Downloading Lightcurve")
 
             except:
                 self.validation_label.setText("!! Please select from available # numbers !!")
         
-        
+    def update_plot(self):
+        global search_result_select_isDownloaded_error
+
+        self.target_plot.update_plot()
+        self.progress_bar_exo_detection.setHidden(True)
+        if search_result_select_isDownloaded_error == False:
+            self.validation_label.setText("Download Complete")
+            self.validation_label.setStyleSheet("color: #edb009;")
+            self.setFixedWidth(1300)
+            self.target_plot.setHidden(False)
+           
+        else:
+            self.validation_label.setGeometry(10,140,300,30)
+            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setStyleSheet("color: #c23b02;")  
+
+        self.target_search_btn.setEnabled(True)
+        self.advanced_search_btn.setEnabled(True)
+        self.select_btn.setEnabled(True) 
+
     # logout button click function to take to the login screen from the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def login_click(self):
@@ -1448,6 +1589,7 @@ class Login(QWidget):
 
 # Application start
 # --------------------------------------------------------------------------  
+
 app = QApplication([])
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
