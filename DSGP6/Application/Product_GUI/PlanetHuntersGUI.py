@@ -196,12 +196,15 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
 
+# Canvas to create the plots
+# --------------------------------------------------------------------------
 class MplCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+# --------------------------------------------------------------------------
 
 # Used to create a plot area to display the plot
 # --------------------------------------------------------------------------
@@ -255,8 +258,6 @@ class PlotArea(QScrollArea):
             
             # Trigger the canvas to update and redraw.
             self.sc.draw()
-        
-
 # --------------------------------------------------------------------------
 
 # Used to create a scrollable text field to show search results
@@ -1151,6 +1152,7 @@ class Signup(QWidget):
             window = Login()
         window.show()
     # --------------------------------------------------------------------------
+
 # --------------------------------------------------------------------------       
 class Select(QWidget):
    
@@ -1324,6 +1326,7 @@ class Select(QWidget):
             window = ExoDetection()
         window.show()
     # --------------------------------------------------------------------------
+
 # --------------------------------------------------------------------------
 class Login(QWidget):
 
@@ -1585,11 +1588,11 @@ class Login(QWidget):
             window = Signup()
         window.show()
     # --------------------------------------------------------------------------
+
 # --------------------------------------------------------------------------      
 
 # Application start
 # --------------------------------------------------------------------------  
-
 app = QApplication([])
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
@@ -1598,4 +1601,5 @@ window = Login()
 window.show()
 splash.finish(window)
 sys.exit(app.exec())
+# -------------------------------------------------------------------------- 
 
