@@ -96,6 +96,46 @@ search_result_select_isDownloaded_error = True
 lightcurve = None
 # --------------------------------------------------------------------------
 
+# Application colors
+# --------------------------------------------------------------------------
+def rgb_to_hex(rgb):
+    return '%02x%02x%02x' % rgb
+# rgb_to_hex((255, 255, 195)) use if needed
+
+background_color = (20, 21, 32)
+background_color_hex = "141520"
+logout_color_hex = "c23b02"
+error_color_hex = "c23b02"
+button_color_hex = "4b993f"
+button_alt_color_hex = "0a71d1"
+button_hover_hex = "edb009"
+
+# --------------------------------------------------------------------------
+
+# Color schemes
+# --------------------------------------------------------------------------
+scheme1 = ["141520","4b993f","0a71d1","edb009"]
+
+
+# Set Color scheme
+# --------------------------------------------------------------------------
+
+def set_scheme(scheme):
+    global background_color_hex
+    global button_color_hex
+    global button_hover_hex
+    global button_alt_color_hex
+
+    background_color_hex = scheme[0]
+    button_color_hex = scheme[1]
+    button_alt_color_hex = scheme[2]
+    button_hover_hex = scheme[3]
+    
+
+set_scheme(scheme1)
+# --------------------------------------------------------------------------
+
+
 # Worker class for multi threading
 # --------------------------------------------------------------------------
 class Worker(QObject):
@@ -295,6 +335,7 @@ class ScrollLabel(QScrollArea):
         self.label.setText(text)
 # --------------------------------------------------------------------------
 
+
 # Exo-Planet detection window
 # --------------------------------------------------------------------------
 class ExoDetection(QWidget):
@@ -312,12 +353,12 @@ class ExoDetection(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex +";")
 
     # Generate url for profile picture for Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def create_url(self):
-        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23141520'
+        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
         return url
 
     # Exo-Planet Detection screen widgets
@@ -339,7 +380,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.validation_label = QLabel(self)
         self.validation_label.setGeometry(10,140,300,30)
-        self.validation_label.setStyleSheet("color:#c23b02;")
+        self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
         # --------------------------------------------------------------------------
 
         # progress_bar_exo_detection in Exo-Planet Detection screen
@@ -378,7 +419,7 @@ class ExoDetection(QWidget):
             self.pfp.setGeometry(60,8,30,30)
             welcome_txt = "OOPS!\n" + "Check your connection!"
             self.validation_label.setText("A working network connection is required")
-            self.validation_label.setStyleSheet("color: #c23b02;")
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
         # --------------------------------------------------------------------------
         
         # Welcome label to welcome the user in the Exo-Planet Detection screen
@@ -487,10 +528,10 @@ class ExoDetection(QWidget):
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -506,10 +547,10 @@ class ExoDetection(QWidget):
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -525,10 +566,10 @@ class ExoDetection(QWidget):
         self.search_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -544,10 +585,10 @@ class ExoDetection(QWidget):
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -563,10 +604,10 @@ class ExoDetection(QWidget):
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -578,7 +619,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected parameters are displayed below",self)
         self.parameter_validation_label.setGeometry(10,170,500,30)
-        self.parameter_validation_label.setStyleSheet("color: #edb009")
+        self.parameter_validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
         self.parameter_validation_label.setHidden(True)
         # --------------------------------------------------------------------------
         
@@ -610,10 +651,10 @@ class ExoDetection(QWidget):
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -628,10 +669,10 @@ class ExoDetection(QWidget):
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -672,10 +713,10 @@ class ExoDetection(QWidget):
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -691,10 +732,10 @@ class ExoDetection(QWidget):
         self.back_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -710,10 +751,10 @@ class ExoDetection(QWidget):
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #c23b02;
+                                    background-color: #""" + logout_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -767,7 +808,6 @@ class ExoDetection(QWidget):
         self.target_screen_btn.setHidden(False)
     # --------------------------------------------------------------------------
 
-
     # Search button click function for target search in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def search_clicked(self):
@@ -777,7 +817,7 @@ class ExoDetection(QWidget):
         global search_result_isDownloaded_error
 
         self.validation_label.setText("Searching..")
-        self.validation_label.setStyleSheet("color: #edb009;")
+        self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
 
         self.progress_bar_exo_detection.setHidden(False)
 
@@ -806,16 +846,17 @@ class ExoDetection(QWidget):
             self.thread.start()
             self.thread.finished.connect(self.update_search_results)
 
-
+    # Display search results after search complete in Exo-Planet detection screen
+    # --------------------------------------------------------------------------
     def update_search_results(self):
         global search_result_isDownloaded_error
         self.validation_label.setGeometry(10,140,300,30)
-        self.validation_label.setStyleSheet("color:#c23b02;")
+        self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.progress_bar_exo_detection.setHidden(True)
         if search_result_isDownloaded_error == False:
             self.validation_label.setText("Here's what we found")
-            self.validation_label.setStyleSheet("color: #edb009;")
+            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
             self.setFixedHeight(420)
             self.target_search_result_scrollable_label.setText(str(target_search_result))
             self.target_search_result_scrollable_label.setHidden(False) 
@@ -823,7 +864,7 @@ class ExoDetection(QWidget):
             self.target_search_result_scrollable_label.setHidden(True)
             self.setFixedHeight(170)
             self.validation_label.setText("!! A working network connection is required !!")
-            self.validation_label.setStyleSheet("color: #c23b02;")  
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
         self.advanced_search_btn.setEnabled(True) 
@@ -849,12 +890,13 @@ class ExoDetection(QWidget):
         '''
     # --------------------------------------------------------------------------
     
+    # --------------------------------------------------------------------------
     def select_clicked(self):
         global lightcurve
         global select_input
         select_valid = True
         self.validation_label.setGeometry(10,140,300,30)
-        self.validation_label.setStyleSheet("color: #edb009;")
+        self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
         try :
             if len(target_search_result) < 1 :
                 self.validation_label.setText("!! No items to select from, search again !!")
@@ -906,6 +948,7 @@ class ExoDetection(QWidget):
 
             except:
                 self.validation_label.setText("!! Please select from available # numbers !!")
+    # --------------------------------------------------------------------------
         
     def update_plot(self):
         global search_result_select_isDownloaded_error
@@ -914,14 +957,15 @@ class ExoDetection(QWidget):
         self.progress_bar_exo_detection.setHidden(True)
         if search_result_select_isDownloaded_error == False:
             self.validation_label.setText("Download Complete")
-            self.validation_label.setStyleSheet("color: #edb009;")
+            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
             self.setFixedWidth(1300)
+            self.setFixedHeight(750)
             self.target_plot.setHidden(False)
            
         else:
             self.validation_label.setGeometry(10,140,300,30)
             self.validation_label.setText("!! A working network connection is required !!")
-            self.validation_label.setStyleSheet("color: #c23b02;")  
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
         self.advanced_search_btn.setEnabled(True)
@@ -948,6 +992,8 @@ class ExoDetection(QWidget):
     # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
+# Class for sign up screen
+# --------------------------------------------------------------------------
 class Signup(QWidget):
     
     # Initialize signup screen
@@ -962,7 +1008,7 @@ class Signup(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
     # --------------------------------------------------------------------------
 
     # create signup screen widgets
@@ -989,6 +1035,16 @@ class Signup(QWidget):
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText(" Email")
         self.email_input.setGeometry((width/2)-150,140,300,30)
+        self.email_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         # --------------------------------------------------------------------------
 
         # Input password in signup screen
@@ -997,6 +1053,16 @@ class Signup(QWidget):
         self.pass_input.setPlaceholderText(" Password")
         self.pass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
         self.pass_input.setGeometry((width/2)-150,190,300,30)
+        self.pass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         # --------------------------------------------------------------------------
 
         # Re-Input password in signup screen
@@ -1004,6 +1070,16 @@ class Signup(QWidget):
         self.repass_input = QLineEdit(self)
         self.repass_input.setPlaceholderText(" Re-enter Password")
         self.repass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
+        self.repass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         self.repass_input.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
 
@@ -1021,10 +1097,10 @@ class Signup(QWidget):
         self.signup_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1038,10 +1114,10 @@ class Signup(QWidget):
         self.login_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1153,6 +1229,7 @@ class Signup(QWidget):
         window.show()
     # --------------------------------------------------------------------------
 
+# Class for select screen
 # --------------------------------------------------------------------------       
 class Select(QWidget):
    
@@ -1168,12 +1245,12 @@ class Select(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
 
     # url creator for profile picture in select screen
     # --------------------------------------------------------------------------
     def create_url(self):
-        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23141520'
+        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
         return url
     # --------------------------------------------------------------------------
     
@@ -1241,10 +1318,10 @@ class Select(QWidget):
         habitability_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1272,10 +1349,10 @@ class Select(QWidget):
         Detection_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1290,10 +1367,10 @@ class Select(QWidget):
         self.logout.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #c23b02;
+                                    background-color: #""" + logout_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1327,6 +1404,7 @@ class Select(QWidget):
         window.show()
     # --------------------------------------------------------------------------
 
+# Class for login screen
 # --------------------------------------------------------------------------
 class Login(QWidget):
 
@@ -1344,7 +1422,7 @@ class Login(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
 
         # Decrypting saved user info and display in the login screen if user has selected remember me previously
         # --------------------------------------------------------------------------
@@ -1371,7 +1449,7 @@ class Login(QWidget):
         self.email_input.setText("")
         self.pass_input.setText("")
         self.checkbox.setText("Remember me")
-        joblib.dump([],"loader_request.joblib")
+        joblib.dump([],os.path.join(sys.path[0],'loader_request.joblib'))
      # --------------------------------------------------------------------------
 
     # Creating the widgets for the login screen
@@ -1406,6 +1484,16 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText(" Email")
+        self.email_input.setStyleSheet("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """)
         self.email_input.setGeometry((width/2)-150,150,300,30)
         # --------------------------------------------------------------------------
 
@@ -1414,17 +1502,20 @@ class Login(QWidget):
         self.pass_input = QLineEdit(self)
         self.pass_input.setPlaceholderText(" Password")
         self.pass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.pass_input.setGeometry((width/2)-150,200,300,30)
+        self.pass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
+        self.pass_input.setGeometry((width/2)-150,190,300,30)
         # --------------------------------------------------------------------------
 
-        # Password re-input textbox in login screen
-        # --------------------------------------------------------------------------
-        self.repass_input = QLineEdit(self)
-        self.repass_input.setPlaceholderText(" Re-enter Password")
-        self.repass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.repass_input.setGeometry((width/2)-150,250,300,30)
-        self.repass_input.setHidden(True)
-        # --------------------------------------------------------------------------
+        
 
         # Login validation label in login screen
         # --------------------------------------------------------------------------
@@ -1447,10 +1538,10 @@ class Login(QWidget):
         self.login_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1464,10 +1555,10 @@ class Login(QWidget):
         self.signup_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1566,11 +1657,11 @@ class Login(QWidget):
                     lines = [self.email_input.text(),self.pass_input.text()]
                     for x in range(0,2):
                         message = lines[x]
-                        fernet = joblib.load("loader.joblib")
+                        fernet = joblib.load(os.path.join(sys.path[0],'loader.joblib'))
                         encMessage = fernet.encrypt(message.encode())
                         lines_w.append(encMessage)
                     
-                    joblib.dump(lines_w,"loader_request.joblib")
+                    joblib.dump(lines_w,os.path.join(sys.path[0],"loader_request.joblib"))
                 
                 if self.window is None:
                     window.close()
