@@ -1417,7 +1417,9 @@ class Login(QWidget):
         global width,height
         width = 400
         height = 450
-        
+
+        #self.setWindowIcon(QIcon("Images/logo_small.png"))
+        self.setWindowIcon(QIcon(r'Application\Product_GUI\Images\icon.png'))
         self.setWindowTitle("Log In - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
@@ -1469,14 +1471,18 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
 
         if (sign_up == False):
-            self.welcome_msg = QLabel("           Log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-170,110,300,30)
+            self.welcome_msg = QLabel("Log In to Planet Hunters",self)
+            self.welcome_msg.setAlignment(Qt.AlignCenter)
+            self.welcome_msg.setGeometry((width/2)-150,110,300,30)
+            self.welcome_msg.setStyleSheet("color: white;")
             self.welcome_msg.setFont(QFont("Helvetica",20))
+            
         else:
             logo.setGeometry((width/2)-30,20,50,50)
-            self.welcome_msg = QLabel("           Thank you for signing up!\n  you can now log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-160,80,350,60)
-            self.welcome_msg.setFont(QFont("Helvetica",18))
+            self.welcome_msg = QLabel("Thank you for signing up!\nyou can now log In to Planet Hunters",self)
+            self.welcome_msg.setGeometry((width/2)-150,80,350,60)
+            self.welcome_msg.setStyleSheet("color: white;")
+            self.welcome_msg.setFont(QFont("Helvetica",15))
             sign_up = False
         # --------------------------------------------------------------------------
 
@@ -1488,6 +1494,7 @@ class Login(QWidget):
                                     QLineEdit {
                                         border: 0.1px solid #dadada;
                                         border-radius: 7px;
+                                        color: white;
                                     }
                                     QLineEdit:focus{
                                         border: 1px solid #dadada;
@@ -1506,6 +1513,7 @@ class Login(QWidget):
                                     QLineEdit {
                                         border: 0.1px solid #dadada;
                                         border-radius: 7px;
+                                        color: white;
                                     }
                                     QLineEdit:focus{
                                         border: 1px solid #dadada;
@@ -1529,6 +1537,7 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
         self.checkbox = QCheckBox("Remember Me", self)
         self.checkbox.setGeometry((width/2)-150,250,300,30)
+        self.checkbox.setStyleSheet("color: white;")
         self.checkbox.setChecked(True)
         # --------------------------------------------------------------------------
 
@@ -1539,6 +1548,7 @@ class Login(QWidget):
                                 QPushButton {
                                     border-radius:10px;
                                     background-color: #""" + button_color_hex + """;
+                                    color: white;
                                     }
                                 QPushButton:hover {
                                     background-color: #""" + button_hover_hex + """;
@@ -1556,6 +1566,7 @@ class Login(QWidget):
                                 QPushButton {
                                     border-radius:10px;
                                     background-color: #""" + button_alt_color_hex + """;
+                                    color: white;
                                     }
                                 QPushButton:hover {
                                     background-color: #""" + button_hover_hex + """;
@@ -1683,8 +1694,9 @@ class Login(QWidget):
 # --------------------------------------------------------------------------      
 
 # Application start
-# --------------------------------------------------------------------------  
+# -------------------------------------------------------------------------- 
 app = QApplication([])
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}")
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
@@ -1693,4 +1705,6 @@ window.show()
 splash.finish(window)
 sys.exit(app.exec())
 # -------------------------------------------------------------------------- 
+
+
 
