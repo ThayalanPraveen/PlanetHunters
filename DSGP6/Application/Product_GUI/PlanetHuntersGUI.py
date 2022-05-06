@@ -96,6 +96,11 @@ search_result_select_isDownloaded_error = True
 lightcurve = None
 # --------------------------------------------------------------------------
 
+# Application font
+# --------------------------------------------------------------------------
+app_font = "Helvetica"
+# --------------------------------------------------------------------------
+
 # Application colors
 # --------------------------------------------------------------------------
 def rgb_to_hex(rgb):
@@ -411,7 +416,7 @@ class ExoDetection(QWidget):
             welcome_txt = "Welcome,\n" + username
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Helvetica",25))
+            self.pfp.setFont(QFont(app_font,25))
             self.pfp.setGeometry(60,8,30,30)
             welcome_txt = "OOPS!\n" + "Check your connection!"
             self.validation_label.setText("A working network connection is required")
@@ -421,14 +426,14 @@ class ExoDetection(QWidget):
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont("Helvetica",12))
+        self.welcome_label.setFont(QFont(app_font,12))
         self.welcome_label.setGeometry(90,0,300,50)
         # --------------------------------------------------------------------------
 
         # Target search / Advanced search label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_label = QLabel("Target search",self)
-        self.search_label.setFont(QFont("Helvetica"))
+        self.search_label.setFont(QFont(app_font))
         self.search_label.setStyleSheet("color: #ffffff")
         self.search_label.setGeometry(10,45,200,15)
         # --------------------------------------------------------------------------
@@ -436,7 +441,7 @@ class ExoDetection(QWidget):
         # Target search support label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_label = QLabel("Enter Target ID :", self)
-        self.target_label.setFont(QFont("Helvetica",12))
+        self.target_label.setFont(QFont(app_font,12))
         self.target_label.setGeometry(10,60,200,30)
         # --------------------------------------------------------------------------
         
@@ -479,7 +484,7 @@ class ExoDetection(QWidget):
         # Advanced search parameter input value in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont("Helvetica",15))
+        self.adv_search_input.setFont(QFont(app_font,15))
         self.adv_search_input.setPlaceholderText("Enter value")
         self.adv_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -496,7 +501,7 @@ class ExoDetection(QWidget):
         # Target ID input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont("Helvetica",15))
+        self.target_search_input.setFont(QFont(app_font,15))
         self.target_search_input.setPlaceholderText("eg: TIC 42173628")
         self.target_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -519,7 +524,7 @@ class ExoDetection(QWidget):
         # Search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_btn = QPushButton(self)
-        self.target_search_btn.setFont(QFont("Helvetica",15))
+        self.target_search_btn.setFont(QFont(app_font,15))
         self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -538,7 +543,7 @@ class ExoDetection(QWidget):
         # Add button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
-        self.add_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.add_advanced_search_btn.setFont(QFont(app_font,15))
         self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -557,7 +562,7 @@ class ExoDetection(QWidget):
         # Search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_advanced_search_btn = QPushButton(self)
-        self.search_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.search_advanced_search_btn.setFont(QFont(app_font,15))
         self.search_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.search_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -576,7 +581,7 @@ class ExoDetection(QWidget):
         # Undo button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
-        self.undo_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.undo_advanced_search_btn.setFont(QFont(app_font,15))
         self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -595,7 +600,7 @@ class ExoDetection(QWidget):
         # Clear button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
-        self.clear_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.clear_advanced_search_btn.setFont(QFont(app_font,15))
         self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
@@ -643,7 +648,7 @@ class ExoDetection(QWidget):
         # Advanced search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.advanced_search_btn = QPushButton("Advanced Search",self)
-        self.advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.advanced_search_btn.setFont(QFont(app_font,15))
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -661,7 +666,7 @@ class ExoDetection(QWidget):
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_screen_btn = QPushButton("Back To Target Search",self)
-        self.target_screen_btn.setFont(QFont("Helvetica",15))
+        self.target_screen_btn.setFont(QFont(app_font,15))
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -680,7 +685,7 @@ class ExoDetection(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont("Helvetica",12))
+        self.select_label.setFont(QFont(app_font,12))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10,360,100,10)
         # --------------------------------------------------------------------------
@@ -688,7 +693,7 @@ class ExoDetection(QWidget):
         # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont("Helvetica",15))
+        self.select_input.setFont(QFont(app_font,15))
         self.select_input.setPlaceholderText(" eg: 0 or 1 ")
         self.select_input.setStyleSheet("""
                                 QLineEdit {
@@ -704,7 +709,7 @@ class ExoDetection(QWidget):
         # Select button for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
-        self.select_btn.setFont(QFont("Helvetica",15))
+        self.select_btn.setFont(QFont(app_font,15))
         self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
@@ -723,7 +728,7 @@ class ExoDetection(QWidget):
         # Back button to go to Select screen from the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
-        self.back_btn.setFont(QFont("Helvetica",15))
+        self.back_btn.setFont(QFont(app_font,15))
         self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
@@ -742,7 +747,7 @@ class ExoDetection(QWidget):
         # Logout button to go to login screen from Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
-        self.lgout_btn.setFont(QFont("Helvetica",15))
+        self.lgout_btn.setFont(QFont(app_font,15))
         self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
@@ -1022,7 +1027,7 @@ class Signup(QWidget):
         # Signup title in signup screen
         # --------------------------------------------------------------------------
         self.welcome_msg = QLabel("          Sign Up to Planet Hunters",self)
-        self.welcome_msg.setFont(QFont("Helvetica",20))
+        self.welcome_msg.setFont(QFont(app_font,20))
         self.welcome_msg.setGeometry((width/2)-170,100,300,30)
         # --------------------------------------------------------------------------
         
@@ -1082,7 +1087,7 @@ class Signup(QWidget):
         # Signup validation label in signup screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Helvetica",12))
+        self.validation_msg.setFont(QFont(app_font,12))
         self.validation_msg.setStyleSheet("color: #e84f61")
         self.validation_msg.setGeometry((width/2)-150,274,300,25)
         # --------------------------------------------------------------------------
@@ -1260,7 +1265,7 @@ class Select(QWidget):
         # Welcome label to greet user in select screen
         # --------------------------------------------------------------------------
         self.hello_label = QLabel(self)
-        self.hello_label.setFont(QFont("Helvetica",12))
+        self.hello_label.setFont(QFont(app_font,12))
         self.hello_label.setGeometry((width/2)-100,0,300,50)
         # --------------------------------------------------------------------------
 
@@ -1287,7 +1292,7 @@ class Select(QWidget):
             self.hello_label.setText(hello_txt)
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Helvetica",25))
+            self.pfp.setFont(QFont(app_font,25))
             self.pfp.setGeometry((width/2)-150,8,30,30)
             hello_txt = "OOPS!\n" + "Check your connection!"
             self.hello_label.setText(hello_txt)
@@ -1297,14 +1302,14 @@ class Select(QWidget):
         # Habitability title in select screen
         # --------------------------------------------------------------------------
         self.hab_title = QLabel("Habitability Detection",self)
-        self.hab_title.setFont(QFont("Helvetica",20))
+        self.hab_title.setFont(QFont(app_font,20))
         self.hab_title.setGeometry((width/2)-150,60,300,30)
         # --------------------------------------------------------------------------
         
         # Habitability description in select screen
         # --------------------------------------------------------------------------
         self.hab_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.hab_desc.setFont(QFont("Helvetica",12))
+        self.hab_desc.setFont(QFont(app_font,12))
         self.hab_desc.setGeometry((width/2)-150,90,300,110)
         # --------------------------------------------------------------------------
         
@@ -1328,14 +1333,14 @@ class Select(QWidget):
         # Exo-Planet detection title in select screen
         # --------------------------------------------------------------------------
         self.exo_title = QLabel("Exoplanet Detection",self)
-        self.exo_title.setFont(QFont("Helvetica",20))
+        self.exo_title.setFont(QFont(app_font,20))
         self.exo_title.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
         
         # Exo-Planet detecttion description in select screen
         # --------------------------------------------------------------------------
         self.exo_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.exo_desc.setFont(QFont("Helvetica",12))
+        self.exo_desc.setFont(QFont(app_font,12))
         self.exo_desc.setGeometry((width/2)-150,270,300,110)
         # --------------------------------------------------------------------------
 
@@ -1471,14 +1476,14 @@ class Login(QWidget):
             self.welcome_msg.setAlignment(Qt.AlignCenter)
             self.welcome_msg.setGeometry((width/2)-150,110,300,30)
             self.welcome_msg.setStyleSheet("color: white;")
-            self.welcome_msg.setFont(QFont("Helvetica",20))
+            self.welcome_msg.setFont(QFont(app_font,20))
             
         else:
             logo.setGeometry((width/2)-30,20,50,50)
             self.welcome_msg = QLabel("Thank you for signing up!\nyou can now log In to Planet Hunters",self)
             self.welcome_msg.setGeometry((width/2)-150,80,350,60)
             self.welcome_msg.setStyleSheet("color: white;")
-            self.welcome_msg.setFont(QFont("Helvetica",15))
+            self.welcome_msg.setFont(QFont(app_font,15))
             sign_up = False
         # --------------------------------------------------------------------------
 
@@ -1524,7 +1529,7 @@ class Login(QWidget):
         # Login validation label in login screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Helvetica",12))
+        self.validation_msg.setFont(QFont(app_font,12))
         self.validation_msg.setStyleSheet("color: #e84f61")
         self.validation_msg.setGeometry((width/2)-150,225,300,30)
         # --------------------------------------------------------------------------
