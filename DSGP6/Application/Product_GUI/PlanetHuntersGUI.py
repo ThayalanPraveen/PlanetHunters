@@ -116,7 +116,6 @@ button_hover_hex = "edb009"
 # --------------------------------------------------------------------------
 scheme1 = ["141520","4b993f","0a71d1","edb009"]
 
-
 # Set Color scheme
 # --------------------------------------------------------------------------
 
@@ -131,10 +130,8 @@ def set_scheme(scheme):
     button_alt_color_hex = scheme[2]
     button_hover_hex = scheme[3]
     
-
 set_scheme(scheme1)
 # --------------------------------------------------------------------------
-
 
 # Worker class for multi threading
 # --------------------------------------------------------------------------
@@ -334,7 +331,6 @@ class ScrollLabel(QScrollArea):
         # setting text to the label
         self.label.setText(text)
 # --------------------------------------------------------------------------
-
 
 # Exo-Planet detection window
 # --------------------------------------------------------------------------
@@ -1696,7 +1692,7 @@ class Login(QWidget):
 # Application start
 # -------------------------------------------------------------------------- 
 app = QApplication([])
-app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}")
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}") # Setting all labels in the app to white color
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
