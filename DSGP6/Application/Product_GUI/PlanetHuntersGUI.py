@@ -98,7 +98,7 @@ lightcurve = None
 
 # Application font
 # --------------------------------------------------------------------------
-app_font = "Helvetica"
+app_font = "Arial"
 # --------------------------------------------------------------------------
 
 # Store selected parameters 
