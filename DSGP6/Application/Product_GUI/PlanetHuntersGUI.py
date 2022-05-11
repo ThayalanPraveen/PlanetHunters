@@ -1884,8 +1884,7 @@ class Login(QWidget):
         width = 400
         height = 450
 
-        #self.setWindowIcon(QIcon("Images/logo_small.png"))
-        self.setWindowIcon(QIcon(r'Application\Product_GUI\Images\icon.png'))
+        self.setWindowIcon(QIcon(os.path.join(sys.path[0],"Images/icon.png")))
         self.setWindowTitle("Log In - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
@@ -2163,6 +2162,7 @@ class Login(QWidget):
 # -------------------------------------------------------------------------- 
 app = QApplication([])
 app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QComboBox {color: white;} ") # Setting all labels in the app to white color
+app.setWindowIcon(QIcon(os.path.join(sys.path[0],"Images/icon.png")))
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
