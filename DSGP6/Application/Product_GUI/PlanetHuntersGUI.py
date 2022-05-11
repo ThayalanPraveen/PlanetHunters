@@ -81,7 +81,7 @@ db_username = ""
 
 # Used to check if login or signup request has failed
 # --------------------------------------------------------------------------
-login_network_fail = False
+login_network_success = False
 signup_network_fail = False
 # --------------------------------------------------------------------------
 
@@ -106,6 +106,11 @@ bls_period = 0
 bls_transit = 0
 bls_duration = 0
 bls_fold_clicked = False
+# --------------------------------------------------------------------------
+
+# Store if user is a pro user or not
+# --------------------------------------------------------------------------
+pro = None
 # --------------------------------------------------------------------------
 
 
@@ -207,15 +212,23 @@ class Worker(QObject):
     def login(self):
         global payload
         global r
-        global login_success
-        global login_network_fail
+        global pro
+        global username
+        global login_network_success
 
-        login_network_fail = False
+        login_network_success = False
         try:
             r = requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
                                 params={"key": apikey},
                                 data=payload)
-            login_network_fail = True
+            try:
+                ref = db.reference('/users')
+                users_ref = ref.child(db_username)
+                user_data = users_ref.get()
+                pro = user_data['Pro']
+            except:
+                pass
+            login_network_success = True
             self.finished.emit()
         except:
             self.finished.emit()
@@ -956,6 +969,50 @@ class ExoDetection(QWidget):
         self.select_btn.clicked.connect(self.select_clicked)
         # --------------------------------------------------------------------------
 
+        # ML Prediction Label
+        # --------------------------------------------------------------------------
+        self.machine_learning_pred = QLabel("ML Prediction : Get Pro For \nML Prediction",self)
+        self.machine_learning_pred.setFont(QFont(app_font,13))
+        self.machine_learning_pred.setGeometry(160,370,250,50)
+        if pro == True:
+
+            data = []
+            for x in range(0,17):
+                try:
+                    lc = target_search_result[x].download() 
+                    y = lc.flux
+                    for i in range(1,len(y),10):
+                        try:
+                            data.append(float(y[i].value))
+                        except:
+                            pass
+                except :
+                    pass
+
+            arr2 = pd.DataFrame(data)
+            medians= arr2.median(axis=0)
+            arr3 =[]
+            for x in range(0,53255-1):
+                try:
+                    arr3.append((arr2[0][x] / medians)-1)
+                except:
+                    arr3.append(-999)
+
+            for x in range(0,53255-1):
+                temp = str(arr3[x])
+                if (temp == 'nan') or (temp == '0   NaN\ndtype: float64') :
+                    arr3[x] = -999
+            
+            model = joblib.load(os.path.join(sys.path[0],'random_forest_model.joblib'))
+            result = model.predict([arr3])
+            if result[0] == 0 :
+                self.machine_learning_pred.setText('ML Prediction : Less likely to host \nan exoplanet')
+            else:
+                self.machine_learning_pred.setText('ML Prediction : Very likely to host \nan exoplanet!')
+        
+        # --------------------------------------------------------------------------
+
+
         # Back button to go to Select screen from the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
@@ -1243,6 +1300,7 @@ class ExoDetection(QWidget):
         self.select_label.setGeometry(10,570,100,10)
         self.select_input.setGeometry(10,590,80,30)
         self.select_btn.setGeometry(100,590,50,30)
+        self.machine_learning_pred.setGeometry(160,590,250,30)
 
     # --------------------------------------------------------------------------
 
@@ -1793,6 +1851,9 @@ class Select(QWidget):
                                 """)
         habitability_btn.setGeometry((width/2)-150,200,300,30)
         habitability_btn.clicked.connect(self.hab_click)
+        if pro == False :
+            habitability_btn.setEnabled(False)
+            habitability_btn.setText("Become a Pro For Habitability Detection")
         # --------------------------------------------------------------------------
 
         # Exo-Planet detection title in select screen
@@ -1938,14 +1999,15 @@ class Login(QWidget):
         if (sign_up == False):
             self.welcome_msg = QLabel("Log In to Planet Hunters",self)
             self.welcome_msg.setAlignment(Qt.AlignCenter)
-            self.welcome_msg.setGeometry((width/2)-150,110,300,30)
+            self.welcome_msg.setGeometry((width/8),110,300,30)
             self.welcome_msg.setStyleSheet("color: white;")
             self.welcome_msg.setFont(QFont(app_font,20))
             
         else:
             logo.setGeometry((width/2)-30,20,50,50)
             self.welcome_msg = QLabel("Thank you for signing up!\nyou can now log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-150,80,350,60)
+            self.welcome_msg.setAlignment(Qt.AlignCenter)
+            self.welcome_msg.setGeometry((width/8)-30,80,350,60)
             self.welcome_msg.setStyleSheet("color: white;")
             self.welcome_msg.setFont(QFont(app_font,15))
             sign_up = False
@@ -2064,6 +2126,8 @@ class Login(QWidget):
     # --------------------------------------------------------------------------
     def login_click(self):
         global payload
+        global username
+        global db_username
 
         self.progress_bar_login.setHidden(False)
         self.login_label.setHidden(False)
@@ -2075,6 +2139,10 @@ class Login(QWidget):
         "password": self.pass_input.text(),
         "returnSecureToken": True
         })
+        username = self.email_input.text()
+        db_username = self.email_input.text()
+        db_username = db_username.replace("@","")
+        db_username = db_username.replace(".","")
 
         # Multi threading the login request in login screen
         # --------------------------------------------------------------------------
@@ -2104,16 +2172,16 @@ class Login(QWidget):
     def login_continue(self):
         global window 
         global username 
-        global db_username
         global payload
         global r
+        global pro
         global window
-        global login_network_fail
+        global login_network_success
 
         lines_w = []
         self.login_btn.setEnabled(True)
         self.signup_btn.setEnabled(True)
-        if login_network_fail == False :
+        if login_network_success == False :
             self.validation_msg.setText("Please connect to a working internet connection") 
             self.progress_bar_login.setHidden(True)
             self.login_label.setHidden(True)
@@ -2124,10 +2192,7 @@ class Login(QWidget):
                 self.login_label.setHidden(True)
             #if the login succeeded
             if 'idToken' in r.json().keys() :
-                username = self.email_input.text()
-                db_username = username
-                db_username = db_username.replace("@","")
-                db_username = db_username.replace(".","")
+                
                         
                 if self.checkbox.isChecked() == True :
                     lines = [self.email_input.text(),self.pass_input.text()]
