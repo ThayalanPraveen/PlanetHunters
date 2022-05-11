@@ -916,7 +916,7 @@ class ExoDetection(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont(app_font,12))
+        self.select_label.setFont(QFont(app_font,8))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10,360,100,10)
         # --------------------------------------------------------------------------
@@ -2162,7 +2162,7 @@ class Login(QWidget):
 # Application start
 # -------------------------------------------------------------------------- 
 app = QApplication([])
-app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}") # Setting all labels in the app to white color
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QComboBox {color: white;} ") # Setting all labels in the app to white color
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
