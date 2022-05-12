@@ -173,6 +173,7 @@ class Worker(QObject):
     # --------------------------------------------------------------------------
     def download_lightcurve(self):
         global lightcurve
+        global lightcurve_collection
         global select_input
         global target_search_result
         global search_result_select_isDownloaded_error
@@ -181,6 +182,7 @@ class Worker(QObject):
         try:
             if filtered == False:
                 lightcurve = target_search_result[int(select_input)].download()
+                lightcurve_collection = target_search_result.download_all()
             else:
                 lightcurve = target_search_result_copy[int(select_input)].download()
 
@@ -284,7 +286,7 @@ class Worker(QObject):
 # --------------------------------------------------------------------------
 class MplCanvas(FigureCanvas):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=5, height=4, dpi=80):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
@@ -308,7 +310,7 @@ class PlotArea(QScrollArea):
         # vertical box layout
         lay = QVBoxLayout(content)
  
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc = MplCanvas(self)
 
         self.toolbar = NavigationToolbar(self.sc, self)
 
@@ -335,15 +337,17 @@ class PlotArea(QScrollArea):
 
         if selector == 0:
             if plot_type < 1 :
+                lightcurve_collection.plot(ax=self.sc.axes)
+            elif plot_type < 2 :
                 lightcurve_plot_data = lightcurve
                 lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 2:
+            elif plot_type < 3:
                 lightcurve_plot_data = lightcurve_plot_data.flatten()
                 lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 3:
+            elif plot_type < 4:
                 lightcurve_plot_data = lightcurve_plot_data.bin()
                 lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 4:
+            elif plot_type < 5:
                 period = np.linspace(1, fold_period, 10000)
                 bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
                 bls.plot(ax=self.sc.axes)
@@ -357,15 +361,17 @@ class PlotArea(QScrollArea):
 
         elif selector == 1:
             if plot_type < 1 :
+                lightcurve_collection.scatter(ax=self.sc.axes)
+            elif plot_type < 2 :
                 lightcurve_plot_data = lightcurve
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 2:
+            elif plot_type < 3:
                 lightcurve_plot_data = lightcurve_plot_data.flatten()
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 3:
+            elif plot_type < 4:
                 lightcurve_plot_data = lightcurve_plot_data.bin()
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 4:
+            elif plot_type < 5:
                 period = np.linspace(1, fold_period, 10000)
                 bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
                 bls.plot(ax=self.sc.axes)
@@ -378,17 +384,18 @@ class PlotArea(QScrollArea):
                 self.sc.axes.set_xlim(-5,5)
 
         else:
-
             if plot_type < 1 :
+                lightcurve_collection.errorbar(ax=self.sc.axes)
+            elif plot_type < 2 :
                 lightcurve_plot_data = lightcurve
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 2:
+            elif plot_type < 3:
                 lightcurve_plot_data = lightcurve_plot_data.flatten()
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 3:
+            elif plot_type < 4:
                 lightcurve_plot_data = lightcurve_plot_data.bin()
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 4:
+            elif plot_type < 5:
                 period = np.linspace(1, fold_period, 10000)
                 bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
                 bls.plot(ax=self.sc.axes)
@@ -600,7 +607,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.plot_type_select = QComboBox(self)
         self.plot_type_select.setGeometry(580, 535, 150, 20)
-        self.plot_type_select.addItems(["Light Curve","Flattened Light Curve","Binned Light Curve"])
+        self.plot_type_select.addItems(["Collection","Light Curve","Flattened Light Curve","Binned Light Curve"])
         self.plot_type_select.activated.connect(self.switch_plot_combo_clicked)
         # --------------------------------------------------------------------------
 
@@ -616,6 +623,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.scatter_btn = QRadioButton("Scatter", self)
         self.scatter_btn.setGeometry(470, 565, 100, 20)
+        self.scatter_btn.setEnabled(False)
         self.scatter_btn.toggled.connect(self.switch_plot_radio_clicked)
         # --------------------------------------------------------------------------
 
@@ -623,7 +631,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.river_btn = QRadioButton("Error Bar", self)
         self.river_btn.setGeometry(470, 595, 100, 20)
-        #self.river_btn.setEnabled(False)
+        self.river_btn.setEnabled(False)
         self.river_btn.toggled.connect(self.switch_plot_radio_clicked)
         # --------------------------------------------------------------------------
         
@@ -1092,11 +1100,11 @@ class ExoDetection(QWidget):
                                 """)
 
         if self.line_btn.isChecked() == True:
-            self.target_plot.update_plot(0,4)
+            self.target_plot.update_plot(0,5)
         elif self.scatter_btn.isChecked() == True:
-            self.target_plot.update_plot(1,4)
+            self.target_plot.update_plot(1,5)
         else:
-            self.target_plot.update_plot(2,4)
+            self.target_plot.update_plot(2,5)
         
         bls_fold_clicked = True
     # --------------------------------------------------------------------------
@@ -1113,11 +1121,11 @@ class ExoDetection(QWidget):
             fold_freq = float(self.bls_freq_input.text())
 
             if self.line_btn.isChecked() == True:
-                self.target_plot.update_plot(0,3)
+                self.target_plot.update_plot(0,4)
             elif self.scatter_btn.isChecked() == True:
-                self.target_plot.update_plot(1,3)
+                self.target_plot.update_plot(1,4)
             else:
-                self.target_plot.update_plot(2,3)
+                self.target_plot.update_plot(2,4)
 
             self.bls_results_period_label.setText("Period : " + str(bls_period))
             self.bls_results_transit_label.setText("Transit Time : " + str(bls_transit))
@@ -1139,13 +1147,21 @@ class ExoDetection(QWidget):
         
         if bls_fold_clicked == True :
             if self.line_btn.isChecked() == True:
-                self.target_plot.update_plot(0,4)
+                self.target_plot.update_plot(0,5)
             elif self.scatter_btn.isChecked() == True:
-                self.target_plot.update_plot(1,4)
+                self.target_plot.update_plot(1,5)
             else:
-                self.target_plot.update_plot(2,4)
+                self.target_plot.update_plot(2,5)
         
         else:
+            if self.plot_type_select.currentIndex() == 0:
+                self.line_btn.setChecked(True)
+                self.scatter_btn.setEnabled(False)
+                self.river_btn.setEnabled(False)
+            else:
+                self.scatter_btn.setEnabled(True)
+                self.river_btn.setEnabled(True)
+
             self.bls_fold_plot_btn.setStyleSheet("""
                                     QPushButton {
                                         border-radius:10px;
