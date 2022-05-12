@@ -974,41 +974,7 @@ class ExoDetection(QWidget):
         self.machine_learning_pred = QLabel("ML Prediction : Get Pro For \nML Prediction",self)
         self.machine_learning_pred.setFont(QFont(app_font,13))
         self.machine_learning_pred.setGeometry(160,370,250,50)
-        if pro == True:
-
-            data = []
-            for x in range(0,17):
-                try:
-                    lc = target_search_result[x].download() 
-                    y = lc.flux
-                    for i in range(1,len(y),10):
-                        try:
-                            data.append(float(y[i].value))
-                        except:
-                            pass
-                except :
-                    pass
-
-            arr2 = pd.DataFrame(data)
-            medians= arr2.median(axis=0)
-            arr3 =[]
-            for x in range(0,53255-1):
-                try:
-                    arr3.append((arr2[0][x] / medians)-1)
-                except:
-                    arr3.append(-999)
-
-            for x in range(0,53255-1):
-                temp = str(arr3[x])
-                if (temp == 'nan') or (temp == '0   NaN\ndtype: float64') :
-                    arr3[x] = -999
-            
-            model = joblib.load(os.path.join(sys.path[0],'random_forest_model.joblib'))
-            result = model.predict([arr3])
-            if result[0] == 0 :
-                self.machine_learning_pred.setText('ML Prediction : Less likely to host \nan exoplanet')
-            else:
-                self.machine_learning_pred.setText('ML Prediction : Very likely to host \nan exoplanet!')
+        self.machine_learning_results()
         
         # --------------------------------------------------------------------------
 
@@ -1060,6 +1026,47 @@ class ExoDetection(QWidget):
             pass
 
         filtered = False
+
+    # Produce and output ML results
+    # --------------------------------------------------------------------------
+    def machine_learning_results(self):
+
+        if pro == True:
+
+            data = []
+            for x in range(0,17):
+                try:
+                    lc = target_search_result[x].download() 
+                    y = lc.flux
+                    for i in range(1,len(y),10):
+                        try:
+                            data.append(float(y[i].value))
+                        except:
+                            pass
+                except :
+                    pass
+
+            arr2 = pd.DataFrame(data)
+            medians= arr2.median(axis=0)
+            arr3 =[]
+            for x in range(0,53255-1):
+                try:
+                    arr3.append((arr2[0][x] / medians)-1)
+                except:
+                    arr3.append(-999)
+
+            for x in range(0,53255-1):
+                temp = str(arr3[x])
+                if (temp == 'nan') or (temp == '0   NaN\ndtype: float64') :
+                    arr3[x] = -999
+            
+            model = joblib.load(os.path.join(sys.path[0],'random_forest_model.joblib'))
+            result = model.predict([arr3])
+            if result[0] == 0 :
+                self.machine_learning_pred.setText('ML Prediction : Less likely to host \nan exoplanet')
+            else:
+                self.machine_learning_pred.setText('ML Prediction : Very likely to host \nan exoplanet!')
+    # --------------------------------------------------------------------------
 
     # Switch plot according to selected radio button    
     # --------------------------------------------------------------------------
@@ -1351,6 +1358,7 @@ class ExoDetection(QWidget):
 
         self.progress_bar_exo_detection.setHidden(True)
         if search_result_isDownloaded_error == False:
+            self.machine_learning_results()
             self.validation_label.setText("Here's what we found")
             self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
             self.setFixedHeight(420)
