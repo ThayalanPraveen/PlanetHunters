@@ -1,3 +1,4 @@
+import time
 import PySide6
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
@@ -11,7 +12,6 @@ import lightkurve as lk
 import matplotlib.pyplot
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import requests
 import firebase_admin
 from firebase_admin import db
@@ -19,6 +19,10 @@ import sys
 import firebase_admin
 from firebase_admin import credentials
 from cryptography.fernet import Fernet
+from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
 
 # Credentitials for firebase authentication
 # --------------------------------------------------------------------------
@@ -84,6 +88,75 @@ signup_network_fail = False
 # Used to check if there were any problems while downloading lightcurves
 # --------------------------------------------------------------------------
 search_result_isDownloaded_error = True
+search_result_select_isDownloaded_error = True
+# --------------------------------------------------------------------------
+
+# Store the downloaded lightcurve from the multi-thread process
+# --------------------------------------------------------------------------
+lightcurve = None
+lightcurve_collection = None
+# --------------------------------------------------------------------------
+
+# Used to store data for bls analysis
+# --------------------------------------------------------------------------
+
+fold_period = 0
+fold_freq = 0
+bls_period = 0
+bls_transit = 0
+bls_duration = 0
+bls_fold_clicked = False
+# --------------------------------------------------------------------------
+
+
+# Application font
+# --------------------------------------------------------------------------
+app_font = "Arial"
+# --------------------------------------------------------------------------
+
+# Store selected parameters 
+# --------------------------------------------------------------------------
+parameters_text = [] # Store list of selected parameters and used for undo
+filter_array = [] # keep track of the search filters applied for undo
+target_search_result_copy = None # copy of search result to filter search result
+filtered = False # boolean to check if user is in the filter screen
+# --------------------------------------------------------------------------
+
+# Application colors
+# --------------------------------------------------------------------------
+def rgb_to_hex(rgb):
+    return '%02x%02x%02x' % rgb
+# rgb_to_hex((255, 255, 195)) use if needed
+
+background_color = (20, 21, 32)
+background_color_hex = "141520"
+logout_color_hex = "c23b02"
+error_color_hex = "c23b02"
+button_color_hex = "4b993f"
+button_alt_color_hex = "0a71d1"
+button_hover_hex = "edb009"
+
+# --------------------------------------------------------------------------
+
+# Color schemes
+# --------------------------------------------------------------------------
+scheme1 = ["141520","4b993f","0a71d1","edb009"]
+
+# Set Color scheme
+# --------------------------------------------------------------------------
+
+def set_scheme(scheme):
+    global background_color_hex
+    global button_color_hex
+    global button_hover_hex
+    global button_alt_color_hex
+
+    background_color_hex = scheme[0]
+    button_color_hex = scheme[1]
+    button_alt_color_hex = scheme[2]
+    button_hover_hex = scheme[3]
+    
+set_scheme(scheme1)
 # --------------------------------------------------------------------------
 
 # Worker class for multi threading
@@ -91,14 +164,37 @@ search_result_isDownloaded_error = True
 class Worker(QObject):
     finished = Signal()
     progress = Signal(int)
-
     # Light curve download multi-threading process
     # --------------------------------------------------------------------------
-    def run(self):
+    def download_lightcurve(self):
+        global lightcurve
+        global select_input
         global target_search_result
+        global search_result_select_isDownloaded_error
+
+
+        try:
+            if filtered == False:
+                lightcurve = target_search_result[int(select_input)].download()
+            else:
+                lightcurve = target_search_result_copy[int(select_input)].download()
+
+            search_result_select_isDownloaded_error = False
+            self.finished.emit()
+        except:
+            search_result_select_isDownloaded_error = True
+            self.finished.emit()
+    # --------------------------------------------------------------------------
+
+    # Light curve search download multi-threading process
+    # --------------------------------------------------------------------------
+    def dowload_search_results(self):
+        global target_search_result
+        global target_search_result_copy
         global search_result_isDownloaded_error
         try:
             target_search_result = lk.search_lightcurve(target_search_id)
+            target_search_result_copy = target_search_result
             search_result_isDownloaded_error = False
             self.finished.emit()
         except:
@@ -171,6 +267,134 @@ class Worker(QObject):
             self.finished.emit()
     # --------------------------------------------------------------------------
 
+# Canvas to create the plots
+# --------------------------------------------------------------------------
+class MplCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+# --------------------------------------------------------------------------
+
+# Used to create a plot area to display the plot
+# --------------------------------------------------------------------------
+class PlotArea(QScrollArea):
+ 
+    # constructor
+    def __init__(self, *args, **kwargs):
+        QScrollArea.__init__(self, *args, **kwargs)
+ 
+        # making widget resizable
+        self.setWidgetResizable(True)
+ 
+        # making qwidget object
+        content = QWidget(self)
+        self.setWidget(content)
+ 
+        # vertical box layout
+        lay = QVBoxLayout(content)
+ 
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+
+        self.toolbar = NavigationToolbar(self.sc, self)
+
+        lay.addWidget(self.toolbar)
+        
+        lay.addWidget(self.sc)
+
+        self.x_axis  = []
+        self.y_axis = []
+
+    # --------------------------------------------------------------------------
+    def update_plot(self,selector,plot_type):
+        global lightcurve
+        global bls_period
+        global bls_transit
+        global bls_duration
+
+        lightcurve_plot_data = lightcurve
+    
+        self.sc.axes.cla()
+
+        # Nested if to switch plot type and line type
+        # --------------------------------------------------------------------------
+
+        if selector == 0:
+            if plot_type < 1 :
+                lightcurve_plot_data = lightcurve
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif plot_type < 2:
+                lightcurve_plot_data = lightcurve_plot_data.flatten()
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif plot_type < 3:
+                lightcurve_plot_data = lightcurve_plot_data.bin()
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif plot_type < 4:
+                period = np.linspace(1, fold_period, 10000)
+                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
+                bls.plot(ax=self.sc.axes)
+                bls_period = bls.period_at_max_power
+                bls_transit = bls.transit_time_at_max_power
+                bls_duration = bls.duration_at_max_power
+            else:
+                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+                self.sc.axes.set_xlim(-5,5)
+
+        elif selector == 1:
+            if plot_type < 1 :
+                lightcurve_plot_data = lightcurve
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            elif plot_type < 2:
+                lightcurve_plot_data = lightcurve_plot_data.flatten()
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            elif plot_type < 3:
+                lightcurve_plot_data = lightcurve_plot_data.bin()
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            elif plot_type < 4:
+                period = np.linspace(1, fold_period, 10000)
+                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
+                bls.plot(ax=self.sc.axes)
+                bls_period = bls.period_at_max_power
+                bls_transit = bls.transit_time_at_max_power
+                bls_duration = bls.duration_at_max_power
+            else:
+                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+                self.sc.axes.set_xlim(-5,5)
+
+        else:
+
+            if plot_type < 1 :
+                lightcurve_plot_data = lightcurve
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+            elif plot_type < 2:
+                lightcurve_plot_data = lightcurve_plot_data.flatten()
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+            elif plot_type < 3:
+                lightcurve_plot_data = lightcurve_plot_data.bin()
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+            elif plot_type < 4:
+                period = np.linspace(1, fold_period, 10000)
+                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
+                bls.plot(ax=self.sc.axes)
+                bls_period = bls.period_at_max_power
+                bls_transit = bls.transit_time_at_max_power
+                bls_duration = bls.duration_at_max_power
+            else:
+                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+                self.sc.axes.set_xlim(-5,5)
+            
+            # --------------------------------------------------------------------------
+        if len(lightcurve) > 0:
+            self.sc.draw()
+            
+
+    # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
 # Used to create a scrollable text field to show search results
 # --------------------------------------------------------------------------
 class ScrollLabel(QScrollArea):
@@ -218,33 +442,183 @@ class ExoDetection(QWidget):
 
         self.window = None
         width = 450
-        height = 130
+        height = 180
         self.setWindowTitle("Exo Planet Detection - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex +";")
 
     # Generate url for profile picture for Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def create_url(self):
-        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23141520'
+        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
         return url
 
     # Exo-Planet Detection screen widgets
     # --------------------------------------------------------------------------
     def create_widgets(self):
+        global filtered
         global username
         global avatar
         global pfp_load
         global network_status
 
+        # Plot Area to display the plots after selecting a sector
+        # --------------------------------------------------------------------------
+        self.target_plot = PlotArea(self)
+        self.target_plot.setGeometry(460, -3, 830, 500)
+        self.target_plot.setHidden(True)
+        # --------------------------------------------------------------------------
+        
+        # Label to show "Select line type" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.line_type_label = QLabel("Select line type" , self)
+        self.line_type_label.setGeometry(470, 500, 150, 20)
+        self.line_type_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Select plot type" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------        
+        self.plot_type_label = QLabel("Select plot type" , self)
+        self.plot_type_label.setGeometry(580, 500, 150, 20)
+        self.plot_type_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label to show "BLS Analysis" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_label = QLabel("BLS Analysis" , self)
+        self.bls_label.setGeometry(740, 500, 150, 20)
+        self.bls_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Period" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_period_label = QLabel("Period :" , self)
+        self.bls_period_label.setGeometry(740, 535, 150, 20)
+        self.bls_period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Inout for "Period" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_period_input = QLineEdit(self)
+        self.bls_period_input.setGeometry(790, 535, 50, 20)
+        self.bls_period_input.setText("20")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Frequency Factor :" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_freq_label = QLabel("Frequency Factor :" , self)
+        self.bls_freq_label.setGeometry(740, 565, 150, 20)
+        self.bls_freq_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Inout for "Frequency Factor" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_freq_input = QLineEdit(self)
+        self.bls_freq_input.setGeometry(855, 565, 30, 20)
+        self.bls_freq_input.setText("500")
+        # --------------------------------------------------------------------------
+
+        # Button for BLS Plot in BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_plot_btn = QPushButton("BLS Plot",self)
+        self.bls_plot_btn.setGeometry(740, 595, 150, 20)
+        self.bls_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bls_plot_btn.clicked.connect(self.bls_btn_clicked)
+        # --------------------------------------------------------------------------
+        
+        # Label for "BLS Planet Results" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_label = QLabel("BLS Planet Results" , self)
+        self.bls_label.setGeometry(900, 500, 150, 20)
+        self.bls_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label for "Period : Requires BLS" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_results_period_label = QLabel("Period : Requires BLS" , self)
+        self.bls_results_period_label.setGeometry(900, 535, 200, 20)
+        self.bls_results_period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label for Tranist Time : Requires BLS" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_results_transit_label = QLabel("Tranist Time : Requires BLS" , self)
+        self.bls_results_transit_label.setGeometry(900, 565, 200, 20)
+        self.bls_results_transit_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+        
+        # Label for "Duration : Requires BLS" for BLS Results in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.bls_results_duration_label = QLabel("Duration : Requires BLS" , self)
+        self.bls_results_duration_label.setGeometry(900, 595, 200, 20)
+        self.bls_results_duration_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Button for phase folded graph from BLS Results in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.bls_fold_plot_btn = QPushButton("BLS Phase Fold",self)
+        self.bls_fold_plot_btn.setGeometry(580, 565, 150, 20)
+        self.bls_fold_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bls_fold_plot_btn.clicked.connect(self.bls_fold_plot_btn_clicked)
+        self.bls_fold_plot_btn.setEnabled(False)
+        # --------------------------------------------------------------------------
+
+        # Combo box to select type of plot in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.plot_type_select = QComboBox(self)
+        self.plot_type_select.setGeometry(580, 535, 150, 20)
+        self.plot_type_select.addItems(["Light Curve","Flattened Light Curve","Binned Light Curve"])
+        self.plot_type_select.activated.connect(self.switch_plot_combo_clicked)
+        # --------------------------------------------------------------------------
+
+        # Radio button to select line type as Line in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.line_btn = QRadioButton("Line", self)
+        self.line_btn.setGeometry(470, 535, 100, 20)
+        self.line_btn.setChecked(True)
+        self.line_btn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+        
+        # Radio button to select line type as Scatter in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.scatter_btn = QRadioButton("Scatter", self)
+        self.scatter_btn.setGeometry(470, 565, 100, 20)
+        self.scatter_btn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+
+        # Radio button to select line type as Errorbar in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.river_btn = QRadioButton("Error Bar", self)
+        self.river_btn.setGeometry(470, 595, 100, 20)
+        #self.river_btn.setEnabled(False)
+        self.river_btn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
         
         # Validation label for the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.validation_label = QLabel(self)
+        self.validation_label = QLabel("Enter target id and start hunting!",self)
         self.validation_label.setGeometry(10,140,300,30)
-        self.validation_label.setStyleSheet("color:#c23b02;")
+        self.validation_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
         # progress_bar_exo_detection in Exo-Planet Detection screen
@@ -279,24 +653,24 @@ class ExoDetection(QWidget):
             welcome_txt = "Welcome,\n" + username
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Helvetica",25))
+            self.pfp.setFont(QFont(app_font,25))
             self.pfp.setGeometry(60,8,30,30)
             welcome_txt = "OOPS!\n" + "Check your connection!"
             self.validation_label.setText("A working network connection is required")
-            self.validation_label.setStyleSheet("color: #c23b02;")
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
         # --------------------------------------------------------------------------
         
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont("Helvetica",12))
+        self.welcome_label.setFont(QFont(app_font,12))
         self.welcome_label.setGeometry(90,0,300,50)
         # --------------------------------------------------------------------------
 
         # Target search / Advanced search label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_label = QLabel("Target search",self)
-        self.search_label.setFont(QFont("Helvetica"))
+        self.search_label.setFont(QFont(app_font))
         self.search_label.setStyleSheet("color: #ffffff")
         self.search_label.setGeometry(10,45,200,15)
         # --------------------------------------------------------------------------
@@ -304,7 +678,7 @@ class ExoDetection(QWidget):
         # Target search support label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_label = QLabel("Enter Target ID :", self)
-        self.target_label.setFont(QFont("Helvetica",12))
+        self.target_label.setFont(QFont(app_font,12))
         self.target_label.setGeometry(10,60,200,30)
         # --------------------------------------------------------------------------
         
@@ -312,17 +686,13 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.adv_select = QComboBox(self)
         self.adv_select.setGeometry(10,65,150,18)
-        self.adv_select.addItems(['dataproduct_type', 'calib_level', 'obs_collection', 'obs_id', 'target_name', 's_ra',
-                                's_dec', 't_min', 't_max', 't_exptime', 'wavelength_region', 'filters', 'em_min',
-                                'em_max', 'target_classification', 'obs_title', 't_obs_release', 'instrument_name',
-                                'proposal_pi', 'proposal_id', 'proposal_type', 'project', 'sequence_number',
-                                'provenance_name', 's_region', 'jpegURL', 'dataURL', 'dataRights', 'mtFlag', 'srcDen',
-                                'intentType', 'obsid', 'objID', 'exptime', 'distance', 'obsID',
-                                'obs_collection_products', 'dataproduct_type_products', 'description', 'type',
-                                'dataURI', 'productType', 'productGroupDescription', 'productSubGroupDescription',
-                                'productDocumentationURL', 'project_products', 'prvversion', 'proposal_id_products',
-                                'productFilename', 'size', 'parent_obsid', 'dataRights_products',
-                                'calib_level_products', 'author', 'mission', '#', 'year', 'sort_order'])
+        self.adv_select.addItems(['calib_level',"objID","obsid","sequence_number","distance","em_max","em_min",
+                                    "s_ra","srcDen","t_exptime","t_max","t_min","mtFlag","dataRights",
+                                    "dataURL","dataproduct_type","filters","instrument_name","intentType",
+                                    "jpegURL","obs_collection","obs_id","obs_title","project",
+                                    "proposal_id","proposal_pi","proposal_type","provenance_name",
+                                    "s_region","target_classification","target_name","wavelength_region"
+                                    ])
         self.adv_select.setStyleSheet("""
                                 QComboBox {
                                     border: 1px solid gray;
@@ -331,6 +701,7 @@ class ExoDetection(QWidget):
                                     min-width: 6em;
                                 }
                                 """)
+        self.adv_select.activated.connect(self.adv_search_parameter_select_clicked)
         self.adv_select.setHidden(True)
         # --------------------------------------------------------------------------
 
@@ -347,7 +718,7 @@ class ExoDetection(QWidget):
         # Advanced search parameter input value in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont("Helvetica",15))
+        self.adv_search_input.setFont(QFont(app_font,15))
         self.adv_search_input.setPlaceholderText("Enter value")
         self.adv_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -364,7 +735,7 @@ class ExoDetection(QWidget):
         # Target ID input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont("Helvetica",15))
+        self.target_search_input.setFont(QFont(app_font,15))
         self.target_search_input.setPlaceholderText("eg: TIC 42173628")
         self.target_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -387,15 +758,15 @@ class ExoDetection(QWidget):
         # Search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_btn = QPushButton(self)
-        self.target_search_btn.setFont(QFont("Helvetica",15))
+        self.target_search_btn.setFont(QFont(app_font,15))
         self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -406,137 +777,134 @@ class ExoDetection(QWidget):
         # Add button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
-        self.add_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.add_advanced_search_btn.setFont(QFont(app_font,15))
         self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
         self.add_advanced_search_btn.setGeometry(370,90,30,30)
+        self.add_advanced_search_btn.clicked.connect(self.adv_search_add_clicked)
         self.add_advanced_search_btn.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Search button for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.search_advanced_search_btn = QPushButton(self)
-        self.search_advanced_search_btn.setFont(QFont("Helvetica",15))
-        self.search_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
-        self.search_advanced_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #4b993f;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #edb009;
-                                    color: #000000
-                                    }
-                                """)
-        self.search_advanced_search_btn.setGeometry(10,130,30,30)
-        self.search_advanced_search_btn.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Undo button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
-        self.undo_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.undo_advanced_search_btn.setFont(QFont(app_font,15))
         self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
-        self.undo_advanced_search_btn.setGeometry(50,130,30,30)
+        self.undo_advanced_search_btn.setGeometry(10,130,30,30)
+        self.undo_advanced_search_btn.clicked.connect(self.adv_search_undo_clicked)
         self.undo_advanced_search_btn.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Clear button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
-        self.clear_advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.clear_advanced_search_btn.setFont(QFont(app_font,15))
         self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
-        self.clear_advanced_search_btn.setGeometry(90,130,30,30)
+        self.clear_advanced_search_btn.setGeometry(50,130,30,30)
         self.clear_advanced_search_btn.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Parameters input validation for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected parameters are displayed below",self)
-        self.parameter_validation_label.setGeometry(10,170,500,30)
-        self.parameter_validation_label.setStyleSheet("color: #edb009")
+        self.parameter_validation_label.setGeometry(10,190,400,30)
+        self.parameter_validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
         self.parameter_validation_label.setHidden(True)
         # --------------------------------------------------------------------------
         
         # Selected parameters label for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.selected_parameters_label = QLabel("Selected Parameters: ",self)
-        self.selected_parameters_label.setGeometry(10,210,200,10)
+        self.selected_parameters_label.setGeometry(10,230,200,10)
         self.selected_parameters_label.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Scrollable text field for selected parameters for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_selected_paramters = ScrollLabel(self)
-        self.adv_selected_paramters.setGeometry(10,230,400,100)
+        self.adv_selected_paramters.setGeometry(10,250,400,100)
         self.adv_selected_paramters.setHidden(True)
         # --------------------------------------------------------------------------
 
         # Search results label for advaned search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.search_results_selected_parameters_label = QLabel("Search results: ",self)
-        self.search_results_selected_parameters_label.setGeometry(10,340,200,10)
+        self.search_results_selected_parameters_label.setGeometry(10,360,200,10)
         self.search_results_selected_parameters_label.setHidden(True)
         # --------------------------------------------------------------------------
        
         # Advanced search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.advanced_search_btn = QPushButton("Advanced Search",self)
-        self.advanced_search_btn.setFont(QFont("Helvetica",15))
+        self.advanced_search_btn = QPushButton("Filter Search",self)
+        self.advanced_search_btn.setFont(QFont(app_font,15))
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
         self.advanced_search_btn.setGeometry(230,90,150,30)
         self.advanced_search_btn.clicked.connect(self.adv_clicked)
+
+        # Enable and disable filter button depending on length of search result
+        # -------------------------------------------------------------------------
+        try:
+            if len(target_search_result) > 0 :
+                self.advanced_search_btn.setEnabled(True)
+            else:
+                self.advanced_search_btn.setEnabled(False)
+        except:
+            self.advanced_search_btn.setEnabled(False)
+        
+         # -------------------------------------------------------------------------- 
+
+        
         # --------------------------------------------------------------------------
 
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_screen_btn = QPushButton("Back To Target Search",self)
-        self.target_screen_btn.setFont(QFont("Helvetica",15))
+        self.target_screen_btn.setFont(QFont(app_font,15))
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -548,7 +916,7 @@ class ExoDetection(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont("Helvetica",12))
+        self.select_label.setFont(QFont(app_font,12))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10,360,100,10)
         # --------------------------------------------------------------------------
@@ -556,7 +924,7 @@ class ExoDetection(QWidget):
         # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont("Helvetica",15))
+        self.select_input.setFont(QFont(app_font,15))
         self.select_input.setPlaceholderText(" eg: 0 or 1 ")
         self.select_input.setStyleSheet("""
                                 QLineEdit {
@@ -572,15 +940,15 @@ class ExoDetection(QWidget):
         # Select button for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
-        self.select_btn.setFont(QFont("Helvetica",15))
+        self.select_btn.setFont(QFont(app_font,15))
         self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -591,15 +959,15 @@ class ExoDetection(QWidget):
         # Back button to go to Select screen from the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
-        self.back_btn.setFont(QFont("Helvetica",15))
+        self.back_btn.setFont(QFont(app_font,15))
         self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -610,15 +978,15 @@ class ExoDetection(QWidget):
         # Logout button to go to login screen from Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
-        self.lgout_btn.setFont(QFont("Helvetica",15))
+        self.lgout_btn.setFont(QFont(app_font,15))
         self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #c23b02;
+                                    background-color: #""" + logout_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -633,7 +1001,204 @@ class ExoDetection(QWidget):
                 self.target_search_result_scrollable_label.setHidden(False)
         except:
             pass
+
+        filtered = False
+
+    # Switch plot according to selected radio button    
+    # --------------------------------------------------------------------------
+    def switch_plot_combo_clicked(self):
+        global bls_fold_clicked
+        bls_fold_clicked = False
+        self.switch_plot_radio_clicked()
+    # --------------------------------------------------------------------------
+
+    # Show BLS Phase fold plot on button click
+    # --------------------------------------------------------------------------
+    def bls_fold_plot_btn_clicked(self):
+        global bls_fold_clicked
+        self.bls_fold_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+
+        if self.line_btn.isChecked() == True:
+            self.target_plot.update_plot(0,4)
+        elif self.scatter_btn.isChecked() == True:
+            self.target_plot.update_plot(1,4)
+        else:
+            self.target_plot.update_plot(2,4)
+        
+        bls_fold_clicked = True
+    # --------------------------------------------------------------------------
+
+    # Produce BLS analysis results on button click
+    # --------------------------------------------------------------------------
+    def bls_btn_clicked(self):
+        global bls_fold_clicked
+        global fold_period
+        global fold_freq
+
+        try:
+            fold_period = float(self.bls_period_input.text())
+            fold_freq = float(self.bls_freq_input.text())
+
+            if self.line_btn.isChecked() == True:
+                self.target_plot.update_plot(0,3)
+            elif self.scatter_btn.isChecked() == True:
+                self.target_plot.update_plot(1,3)
+            else:
+                self.target_plot.update_plot(2,3)
+
+            self.bls_results_period_label.setText("Period : " + str(bls_period))
+            self.bls_results_transit_label.setText("Transit Time : " + str(bls_transit))
+            self.bls_results_duration_label.setText("duration : " + str(bls_duration))
+
+            if bls_period > 0 :
+                self.bls_fold_plot_btn.setEnabled(True)
+                bls_fold_clicked = False
+
+
+        except:
+            print("wrong data types or invalid inputs")
+        
+    # --------------------------------------------------------------------------
+
+    # Switch plot according to selected radio button  
+    # --------------------------------------------------------------------------
+    def switch_plot_radio_clicked(self):
+        
+        if bls_fold_clicked == True :
+            if self.line_btn.isChecked() == True:
+                self.target_plot.update_plot(0,4)
+            elif self.scatter_btn.isChecked() == True:
+                self.target_plot.update_plot(1,4)
+            else:
+                self.target_plot.update_plot(2,4)
+        
+        else:
+            self.bls_fold_plot_btn.setStyleSheet("""
+                                    QPushButton {
+                                        border-radius:10px;
+                                        background-color: #""" + button_color_hex + """;
+                                        }
+                                    QPushButton:hover {
+                                        background-color: #""" + button_hover_hex + """;
+                                        color: #000000
+                                        }
+                                    """)
+
+            if self.line_btn.isChecked() == True:
+                self.target_plot.update_plot(0,self.plot_type_select.currentIndex())
+            elif self.scatter_btn.isChecked() == True:
+                self.target_plot.update_plot(1,self.plot_type_select.currentIndex())
+            else:
+                self.target_plot.update_plot(2,self.plot_type_select.currentIndex())
+
+    # --------------------------------------------------------------------------
+
+    # Parameter select data type validaion message in advanced search in  the Exo-Planet Detection screen
+    # --------------------------------------------------------------------------
+    def adv_search_parameter_select_clicked(self):
     
+        if self.adv_select.currentIndex() < 4 :
+            self.adv_search_input.setPlaceholderText("Input integers to search " + self.adv_select.currentText())
+        elif self.adv_select.currentIndex() < 12 :
+            self.adv_search_input.setPlaceholderText("Input float to search " + self.adv_select.currentText())
+        elif self.adv_select.currentIndex() < 13 :
+            self.adv_search_input.setPlaceholderText("Input boolean(True/False) to search " + self.adv_select.currentText())
+        else: 
+            self.adv_search_input.setPlaceholderText("Input string to search " + self.adv_select.currentText())
+    
+     # -------------------------------------------------------------------------- 
+          
+    # Add parameter button click function in advanced search in  the Exo-Planet Detection screen
+    # --------------------------------------------------------------------------
+    def adv_search_add_clicked(self):
+        global target_search_result_copy
+        global parameters_text
+        global filter_array
+
+        self.validation_label.setGeometry(10,155,300,30)
+
+        if len(self.adv_search_input.text()) == 0:
+                self.validation_label.setText("Field empty! Enter parameter value")
+        else:
+            #try:
+            config_exists = False
+            for x in parameters_text:
+                if x  == (self.adv_select.currentText() + " value :" + self.adv_search_input.text() + "\n") :
+                    self.validation_label.setText("Configuration already exists")
+                    config_exists = True
+            if config_exists == False:
+                if self.adv_select.currentIndex() < 4 :
+                    filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == int(self.adv_search_input.text()))[0]
+                elif self.adv_select.currentIndex() < 12 :
+                    filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == float(self.adv_search_input.text()))[0]
+                elif self.adv_select.currentIndex() < 13 :
+                    filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == bool(self.adv_search_input.text()))[0]
+                else: 
+                    filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == self.adv_search_input.text())[0]
+                
+                filter_array.append(filter)
+                target_search_result_copy = target_search_result
+
+                for x in filter_array:
+                    target_search_result_copy = target_search_result_copy[x]
+
+                self.validation_label.setText("Updated search results")
+                self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+                parameters_text.append(self.adv_select.currentText() + " value :" + self.adv_search_input.text() + "\n")
+                self.update_parameters_display()
+                self.target_search_result_scrollable_label.setText(str(target_search_result_copy))
+            #except:
+                #self.validation_label.setText("Invalid datatype entered")
+            
+            self.adv_search_parameter_select_clicked()
+    
+    # -------------------------------------------------------------------------- 
+
+    # Update parameters display when new parameters are added to the filter in the advanced search in Exo-Detection Screen
+    # --------------------------------------------------------------------------    
+    def update_parameters_display(self):
+        parameters_display_text = ""
+        for x in parameters_text:
+            parameters_display_text = parameters_display_text + x
+        self.adv_selected_paramters.setText(parameters_display_text)
+    
+     # -------------------------------------------------------------------------- 
+
+    # Undo function in advanced search in Exo-Detection Screen
+    # -------------------------------------------------------------------------- 
+    def adv_search_undo_clicked(self):
+        global parameters_text
+        global filter_array
+        global target_search_result_copy
+
+        try:
+            parameters_text.pop()
+            filter_array.pop()
+            self.validation_label.setText("Undo applied")
+        except:
+            self.validation_label.setText("Nothing to undo")
+
+        target_search_result_copy = target_search_result
+
+        for x in filter_array:
+            target_search_result_copy = target_search_result_copy[x]
+
+        
+        self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+        self.update_parameters_display()
+        self.target_search_result_scrollable_label.setText(str(target_search_result_copy))
+    
+     # -------------------------------------------------------------------------- 
+
     # Target search button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def target_screen_clicked(self):
@@ -648,13 +1213,13 @@ class ExoDetection(QWidget):
    # Advanced search button click function in the Exo-Planet Detection screen
    # --------------------------------------------------------------------------
     def adv_clicked(self):
-        self.setFixedHeight(430)
-        self.select_label.setHidden(True)
-        self.select_input.setHidden(True)
-        self.select_btn.setHidden(True)
+        global filtered
+
+        filtered = True
+        self.setFixedHeight(630)
         self.parameter_validation_label.setHidden(False)
         self.selected_parameters_label.setHidden(False)
-        self.target_search_result_scrollable_label.setHidden(True)
+        self.search_results_selected_parameters_label.setHidden(False)
         self.adv_selected_paramters.setHidden(False)
         self.validation_label.setText("")
         self.target_search_input.setHidden(True)
@@ -666,12 +1231,20 @@ class ExoDetection(QWidget):
         self.advanced_search_btn.setHidden(True)
         self.adv_search_learn_more.setHidden(False)
         self.add_advanced_search_btn.setHidden(False)
-        self.search_advanced_search_btn.setHidden(False)
         self.undo_advanced_search_btn.setHidden(False)
         self.clear_advanced_search_btn.setHidden(False)
         self.target_screen_btn.setHidden(False)
-    # --------------------------------------------------------------------------
+   
 
+
+        self.validation_label.setGeometry(10,155,300,30)
+        self.target_search_result_scrollable_label.setGeometry(10,380,400,180)
+        self.target_search_result_scrollable_label.setText(str(target_search_result))
+        self.select_label.setGeometry(10,570,100,10)
+        self.select_input.setGeometry(10,590,80,30)
+        self.select_btn.setGeometry(100,590,50,30)
+
+    # --------------------------------------------------------------------------
 
     # Search button click function for target search in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
@@ -681,14 +1254,13 @@ class ExoDetection(QWidget):
         global target_search_result
         global search_result_isDownloaded_error
 
-        self.setFixedHeight(180)
         self.validation_label.setText("Searching..")
-        self.validation_label.setStyleSheet("color: #edb009;")
+        self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
 
         self.progress_bar_exo_detection.setHidden(False)
 
         if self.target_search_input.text().strip() == "" :
-            self.setFixedHeight(180)
+            #self.setFixedHeight(180)
             self.validation_label.setText("!! Enter Target ID to search.\nTo search with other parameters use advanced search !!")
             self.progress_bar_exo_detection.setHidden(True)
         else:
@@ -704,7 +1276,7 @@ class ExoDetection(QWidget):
             # Step 4: Move worker to the thread
             self.worker.moveToThread(self.thread)
             # Step 5: Connect signals and slots
-            self.thread.started.connect(self.worker.run)
+            self.thread.started.connect(self.worker.dowload_search_results)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
             self.thread.finished.connect(self.thread.deleteLater)
@@ -712,14 +1284,17 @@ class ExoDetection(QWidget):
             self.thread.start()
             self.thread.finished.connect(self.update_search_results)
 
-
+    # Display search results after search complete in Exo-Planet detection screen
+    # --------------------------------------------------------------------------
     def update_search_results(self):
         global search_result_isDownloaded_error
+        self.validation_label.setGeometry(10,140,300,30)
+        self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.progress_bar_exo_detection.setHidden(True)
         if search_result_isDownloaded_error == False:
             self.validation_label.setText("Here's what we found")
-            self.validation_label.setStyleSheet("color: #edb009;")
+            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
             self.setFixedHeight(420)
             self.target_search_result_scrollable_label.setText(str(target_search_result))
             self.target_search_result_scrollable_label.setHidden(False) 
@@ -727,10 +1302,16 @@ class ExoDetection(QWidget):
             self.target_search_result_scrollable_label.setHidden(True)
             self.setFixedHeight(170)
             self.validation_label.setText("!! A working network connection is required !!")
-            self.validation_label.setStyleSheet("color: #c23b02;")  
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
-        self.advanced_search_btn.setEnabled(True) 
+
+        try:
+            if len(target_search_result) > 0 :
+                self.advanced_search_btn.setHidden(False)
+                self.advanced_search_btn.setEnabled(True) 
+        except:
+            pass
         
         # Add search to the database under the user
         '''
@@ -753,13 +1334,27 @@ class ExoDetection(QWidget):
         '''
     # --------------------------------------------------------------------------
     
+    # --------------------------------------------------------------------------
     def select_clicked(self):
+        global lightcurve
+        global select_input
         select_valid = True
-        self.validation_label.setStyleSheet("color: #edb009;")
+        self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+     
+        if filtered == True :
+            self.validation_label.setGeometry(10,155,300,30)
+        else:
+            self.validation_label.setGeometry(10,140,300,30)
+
         try :
-            if len(target_search_result) < 1 :
-                self.validation_label.setText("!! No items to select from, search again !!")
-                select_valid = False
+            if filtered == False:
+                if len(target_search_result) < 1 :
+                    self.validation_label.setText("!! No items to select from, search again !!")
+                    select_valid = False
+            else:
+                if len(target_search_result_copy) < 1 :
+                    self.validation_label.setText("!! No items to select from, search again !!")
+                    select_valid = False
 
         except :
             select_valid = False
@@ -779,12 +1374,69 @@ class ExoDetection(QWidget):
         
         if select_valid == True:
             try:
-                lightcurve = target_search_result[int(self.select_input.text().strip())].download()
-
+                if filtered == True:
+                    if (int(self.select_input.text().strip()) > len(target_search_result_copy)-1) or (int(self.select_input.text().strip()) < 0) :
+                        select_valid = False
+                        self.validation_label.setText("!! Please input within range !!")
+                else:
+                    if (int(self.select_input.text().strip()) > len(target_search_result)-1) or (int(self.select_input.text().strip()) < 0) :
+                        select_valid = False
+                        self.validation_label.setText("!! Please input within range !!")
             except:
-                self.validation_label.setText("!! Please select from available # numbers !!")
+                pass
         
+        if select_valid == True:
+
+            self.target_search_btn.setEnabled(False)
+            self.advanced_search_btn.setEnabled(False)
+            self.select_btn.setEnabled(False) 
+
+            select_input = self.select_input.text().strip()
+
+            # Step 2: Create a QThread object
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(self.worker.download_lightcurve)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # Step 6: Start the thread
+            self.thread.start()
+            self.thread.finished.connect(self.update_plot)
+
+            self.progress_bar_exo_detection.setGeometry(160,370,144,30)
+            self.progress_bar_exo_detection.setHidden(False)
+            self.validation_label.setGeometry(160,387,300,30)
+            self.validation_label.setText("Downloading Lightcurve")
+
+    # --------------------------------------------------------------------------
         
+    def update_plot(self):
+        global search_result_select_isDownloaded_error
+        
+        self.target_plot.update_plot(0,0)
+        self.progress_bar_exo_detection.setHidden(True)
+        if search_result_select_isDownloaded_error == False:
+            self.validation_label.setText("Download Complete")
+            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+            self.setFixedWidth(1300)
+            self.setFixedHeight(750)
+            self.target_plot.setHidden(False)
+           
+        else:
+            self.validation_label.setGeometry(10,140,300,30)
+            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
+
+        self.target_search_btn.setEnabled(True)
+        self.advanced_search_btn.setEnabled(True)
+        self.select_btn.setEnabled(True) 
+        self.adv_clicked()
+
     # logout button click function to take to the login screen from the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def login_click(self):
@@ -806,6 +1458,8 @@ class ExoDetection(QWidget):
     # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
+# Class for sign up screen
+# --------------------------------------------------------------------------
 class Signup(QWidget):
     
     # Initialize signup screen
@@ -820,7 +1474,7 @@ class Signup(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
     # --------------------------------------------------------------------------
 
     # create signup screen widgets
@@ -838,7 +1492,7 @@ class Signup(QWidget):
         # Signup title in signup screen
         # --------------------------------------------------------------------------
         self.welcome_msg = QLabel("          Sign Up to Planet Hunters",self)
-        self.welcome_msg.setFont(QFont("Helvetica",20))
+        self.welcome_msg.setFont(QFont(app_font,20))
         self.welcome_msg.setGeometry((width/2)-170,100,300,30)
         # --------------------------------------------------------------------------
         
@@ -847,6 +1501,16 @@ class Signup(QWidget):
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText(" Email")
         self.email_input.setGeometry((width/2)-150,140,300,30)
+        self.email_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         # --------------------------------------------------------------------------
 
         # Input password in signup screen
@@ -855,6 +1519,16 @@ class Signup(QWidget):
         self.pass_input.setPlaceholderText(" Password")
         self.pass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
         self.pass_input.setGeometry((width/2)-150,190,300,30)
+        self.pass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         # --------------------------------------------------------------------------
 
         # Re-Input password in signup screen
@@ -862,13 +1536,23 @@ class Signup(QWidget):
         self.repass_input = QLineEdit(self)
         self.repass_input.setPlaceholderText(" Re-enter Password")
         self.repass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
+        self.repass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
         self.repass_input.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
 
         # Signup validation label in signup screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Helvetica",12))
+        self.validation_msg.setFont(QFont(app_font,12))
         self.validation_msg.setStyleSheet("color: #e84f61")
         self.validation_msg.setGeometry((width/2)-150,274,300,25)
         # --------------------------------------------------------------------------
@@ -879,10 +1563,10 @@ class Signup(QWidget):
         self.signup_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -896,10 +1580,10 @@ class Signup(QWidget):
         self.login_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1010,6 +1694,8 @@ class Signup(QWidget):
             window = Login()
         window.show()
     # --------------------------------------------------------------------------
+
+# Class for select screen
 # --------------------------------------------------------------------------       
 class Select(QWidget):
    
@@ -1025,12 +1711,12 @@ class Select(QWidget):
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
 
     # url creator for profile picture in select screen
     # --------------------------------------------------------------------------
     def create_url(self):
-        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23141520'
+        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
         return url
     # --------------------------------------------------------------------------
     
@@ -1044,7 +1730,7 @@ class Select(QWidget):
         # Welcome label to greet user in select screen
         # --------------------------------------------------------------------------
         self.hello_label = QLabel(self)
-        self.hello_label.setFont(QFont("Helvetica",12))
+        self.hello_label.setFont(QFont(app_font,12))
         self.hello_label.setGeometry((width/2)-100,0,300,50)
         # --------------------------------------------------------------------------
 
@@ -1071,7 +1757,7 @@ class Select(QWidget):
             self.hello_label.setText(hello_txt)
         else:
             self.pfp.setText(":(")
-            self.pfp.setFont(QFont("Helvetica",25))
+            self.pfp.setFont(QFont(app_font,25))
             self.pfp.setGeometry((width/2)-150,8,30,30)
             hello_txt = "OOPS!\n" + "Check your connection!"
             self.hello_label.setText(hello_txt)
@@ -1081,14 +1767,14 @@ class Select(QWidget):
         # Habitability title in select screen
         # --------------------------------------------------------------------------
         self.hab_title = QLabel("Habitability Detection",self)
-        self.hab_title.setFont(QFont("Helvetica",20))
+        self.hab_title.setFont(QFont(app_font,20))
         self.hab_title.setGeometry((width/2)-150,60,300,30)
         # --------------------------------------------------------------------------
         
         # Habitability description in select screen
         # --------------------------------------------------------------------------
         self.hab_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.hab_desc.setFont(QFont("Helvetica",12))
+        self.hab_desc.setFont(QFont(app_font,12))
         self.hab_desc.setGeometry((width/2)-150,90,300,110)
         # --------------------------------------------------------------------------
         
@@ -1098,10 +1784,10 @@ class Select(QWidget):
         habitability_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1112,14 +1798,14 @@ class Select(QWidget):
         # Exo-Planet detection title in select screen
         # --------------------------------------------------------------------------
         self.exo_title = QLabel("Exoplanet Detection",self)
-        self.exo_title.setFont(QFont("Helvetica",20))
+        self.exo_title.setFont(QFont(app_font,20))
         self.exo_title.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
         
         # Exo-Planet detecttion description in select screen
         # --------------------------------------------------------------------------
         self.exo_desc = QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAenean dolor enim, aliquam sit amet odio et, tempor tincidunt nibh.\nQuisque dictum rhoncus ipsum ut pulvinar.\nNam gravida quam lacus, vitae luctus enim aliquet vitae.\nMorbi non libero ullamcorper tortor mollis consequat.\nSed feugiat neque ac augue commodo pharetra.",self)
-        self.exo_desc.setFont(QFont("Helvetica",12))
+        self.exo_desc.setFont(QFont(app_font,12))
         self.exo_desc.setGeometry((width/2)-150,270,300,110)
         # --------------------------------------------------------------------------
 
@@ -1129,10 +1815,10 @@ class Select(QWidget):
         Detection_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1147,10 +1833,10 @@ class Select(QWidget):
         self.logout.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #c23b02;
+                                    background-color: #""" + logout_color_hex + """;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1183,6 +1869,8 @@ class Select(QWidget):
             window = ExoDetection()
         window.show()
     # --------------------------------------------------------------------------
+
+# Class for login screen
 # --------------------------------------------------------------------------
 class Login(QWidget):
 
@@ -1195,12 +1883,14 @@ class Login(QWidget):
         global width,height
         width = 400
         height = 450
-        
+
+        #self.setWindowIcon(QIcon("Images/logo_small.png"))
+        self.setWindowIcon(QIcon(r'Application\Product_GUI\Images\icon.png'))
         self.setWindowTitle("Log In - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
         self.create_widgets()
-        self.setStyleSheet("background-color: rgb(20, 21, 32)")
+        self.setStyleSheet("background-color: #" + background_color_hex + ";")
 
         # Decrypting saved user info and display in the login screen if user has selected remember me previously
         # --------------------------------------------------------------------------
@@ -1227,7 +1917,7 @@ class Login(QWidget):
         self.email_input.setText("")
         self.pass_input.setText("")
         self.checkbox.setText("Remember me")
-        joblib.dump([],"loader_request.joblib")
+        joblib.dump([],os.path.join(sys.path[0],'loader_request.joblib'))
      # --------------------------------------------------------------------------
 
     # Creating the widgets for the login screen
@@ -1247,14 +1937,18 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
 
         if (sign_up == False):
-            self.welcome_msg = QLabel("           Log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-170,110,300,30)
-            self.welcome_msg.setFont(QFont("Helvetica",20))
+            self.welcome_msg = QLabel("Log In to Planet Hunters",self)
+            self.welcome_msg.setAlignment(Qt.AlignCenter)
+            self.welcome_msg.setGeometry((width/2)-150,110,300,30)
+            self.welcome_msg.setStyleSheet("color: white;")
+            self.welcome_msg.setFont(QFont(app_font,20))
+            
         else:
             logo.setGeometry((width/2)-30,20,50,50)
-            self.welcome_msg = QLabel("           Thank you for signing up!\n  you can now log In to Planet Hunters",self)
-            self.welcome_msg.setGeometry((width/2)-160,80,350,60)
-            self.welcome_msg.setFont(QFont("Helvetica",18))
+            self.welcome_msg = QLabel("Thank you for signing up!\nyou can now log In to Planet Hunters",self)
+            self.welcome_msg.setGeometry((width/2)-150,80,350,60)
+            self.welcome_msg.setStyleSheet("color: white;")
+            self.welcome_msg.setFont(QFont(app_font,15))
             sign_up = False
         # --------------------------------------------------------------------------
 
@@ -1262,6 +1956,17 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText(" Email")
+        self.email_input.setStyleSheet("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                        color: white;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """)
         self.email_input.setGeometry((width/2)-150,150,300,30)
         # --------------------------------------------------------------------------
 
@@ -1270,22 +1975,26 @@ class Login(QWidget):
         self.pass_input = QLineEdit(self)
         self.pass_input.setPlaceholderText(" Password")
         self.pass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.pass_input.setGeometry((width/2)-150,200,300,30)
+        self.pass_input.setStyleSheet(("""
+                                    QLineEdit {
+                                        border: 0.1px solid #dadada;
+                                        border-radius: 7px;
+                                        color: white;
+                                    }
+                                    QLineEdit:focus{
+                                        border: 1px solid #dadada;
+                                        border-radius: 7px;
+                                    }
+                                    """))
+        self.pass_input.setGeometry((width/2)-150,190,300,30)
         # --------------------------------------------------------------------------
 
-        # Password re-input textbox in login screen
-        # --------------------------------------------------------------------------
-        self.repass_input = QLineEdit(self)
-        self.repass_input.setPlaceholderText(" Re-enter Password")
-        self.repass_input.setEchoMode(PySide6.QtWidgets.QLineEdit.Password)
-        self.repass_input.setGeometry((width/2)-150,250,300,30)
-        self.repass_input.setHidden(True)
-        # --------------------------------------------------------------------------
+        
 
         # Login validation label in login screen
         # --------------------------------------------------------------------------
         self.validation_msg = QLabel("",self)
-        self.validation_msg.setFont(QFont("Helvetica",12))
+        self.validation_msg.setFont(QFont(app_font,12))
         self.validation_msg.setStyleSheet("color: #e84f61")
         self.validation_msg.setGeometry((width/2)-150,225,300,30)
         # --------------------------------------------------------------------------
@@ -1294,6 +2003,7 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
         self.checkbox = QCheckBox("Remember Me", self)
         self.checkbox.setGeometry((width/2)-150,250,300,30)
+        self.checkbox.setStyleSheet("color: white;")
         self.checkbox.setChecked(True)
         # --------------------------------------------------------------------------
 
@@ -1303,10 +2013,11 @@ class Login(QWidget):
         self.login_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #4b993f;
+                                    background-color: #""" + button_color_hex + """;
+                                    color: white;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1320,10 +2031,11 @@ class Login(QWidget):
         self.signup_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
-                                    background-color: #0a71d1;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    color: white;
                                     }
                                 QPushButton:hover {
-                                    background-color: #edb009;
+                                    background-color: #""" + button_hover_hex + """;
                                     color: #000000
                                     }
                                 """)
@@ -1422,11 +2134,11 @@ class Login(QWidget):
                     lines = [self.email_input.text(),self.pass_input.text()]
                     for x in range(0,2):
                         message = lines[x]
-                        fernet = joblib.load("loader.joblib")
+                        fernet = joblib.load(os.path.join(sys.path[0],'loader.joblib'))
                         encMessage = fernet.encrypt(message.encode())
                         lines_w.append(encMessage)
                     
-                    joblib.dump(lines_w,"loader_request.joblib")
+                    joblib.dump(lines_w,os.path.join(sys.path[0],"loader_request.joblib"))
                 
                 if self.window is None:
                     window.close()
@@ -1444,11 +2156,13 @@ class Login(QWidget):
             window = Signup()
         window.show()
     # --------------------------------------------------------------------------
+
 # --------------------------------------------------------------------------      
 
 # Application start
-# --------------------------------------------------------------------------  
+# -------------------------------------------------------------------------- 
 app = QApplication([])
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}") # Setting all labels in the app to white color
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
@@ -1456,4 +2170,7 @@ window = Login()
 window.show()
 splash.finish(window)
 sys.exit(app.exec())
+# -------------------------------------------------------------------------- 
+
+
 
