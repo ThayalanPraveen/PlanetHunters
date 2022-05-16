@@ -7,7 +7,7 @@ Typography
 p {
   font-size: 15px;
   line-height: 29px;
-  color: rgba(28, 54, 83, 0.6);
+  color: rgb(5, 26, 50);
   padding-bottom: 20px; }
 
 h1 {
@@ -16,19 +16,19 @@ h1 {
 h2 {
   font-size: 40px;
   font-weight: 300;
-  color: #3D4351; }
+  color: #21252f; }
 
 h3 {
   font-size: 24px;
   margin-bottom: 20px;
-  color: #3D4351; }
+  color: #9ea5b6; }
 
 h4 {
   font-size: 18px; }
 
 h5 {
   font-size: 15px;
-  color: #3D4351;
+  color: #161a21;
   text-transform: uppercase;
   font-weight: 500; }
 
@@ -1160,3 +1160,5 @@ you can use the generic selector below, but it's slower:
 
 .icon-dribbble:before {
   content: "\e063"; }
+
+  
