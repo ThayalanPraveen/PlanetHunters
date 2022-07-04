@@ -145,7 +145,6 @@ scheme1 = ["141520","4b993f","0a71d1","edb009"]
 
 # Set Color scheme
 # --------------------------------------------------------------------------
-
 def set_scheme(scheme):
     global background_color_hex
     global button_color_hex
@@ -155,10 +154,8 @@ def set_scheme(scheme):
     background_color_hex = scheme[0]
     button_color_hex = scheme[1]
     button_alt_color_hex = scheme[2]
-    button_hover_hex = scheme[3]
-    
+    button_hover_hex = scheme[3]  
 set_scheme(scheme1)
-# --------------------------------------------------------------------------
 
 
 # Worker class for multi threading
@@ -279,7 +276,6 @@ class Worker(QObject):
         except:
             signup_network_fail = True
             self.finished.emit()
-    # --------------------------------------------------------------------------
 
 # Canvas to create the plots
 # --------------------------------------------------------------------------
@@ -289,7 +285,6 @@ class MplCanvas(FigureCanvas):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
-# --------------------------------------------------------------------------
 
 # Used to create a plot area to display the plot
 # --------------------------------------------------------------------------
@@ -405,10 +400,6 @@ class PlotArea(QScrollArea):
         if len(lightcurve) > 0:
             self.sc.draw()
             
-
-    # --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-
 # Used to create a scrollable text field to show search results
 # --------------------------------------------------------------------------
 class ScrollLabel(QScrollArea):
@@ -442,7 +433,6 @@ class ScrollLabel(QScrollArea):
     def setText(self, text):
         # setting text to the label
         self.label.setText(text)
-# --------------------------------------------------------------------------
 
 # Exo-Planet detection window
 # --------------------------------------------------------------------------
@@ -467,18 +457,6 @@ class ExoDetection(QWidget):
     # --------------------------------------------------------------------------
     def create_widgets(self):
 
-        # Component Offsets
-        # --------------------------------------------------------------------------
-        cmp_1_x_offset = 750
-        cmp_1_y_offset = 490
-        cmp_2_x_offset = 0
-        cmp_2_y_offset = 0
-        cmp_3_x_offset = 40
-        cmp_3_y_offset = 0
-        cmp_4_x_offset = 0
-        cmp_4_y_offset = 0
-        # --------------------------------------------------------------------------
-
         global filtered
         global username
         global avatar
@@ -486,206 +464,67 @@ class ExoDetection(QWidget):
         global network_status 
 
         # Component set 3
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        # Generating and displaying profile picture for the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.pfp_label  = QLabel(self)
-        self.pfp_pixmap = QPixmap()
-        pfp_url = self.create_url()
-
-        try:
-            request = requests.get(pfp_url)
-            avatar = request.content
-            network_status = True
-            self.pfp_pixmap.loadFromData(avatar)
-            self.pfp_label.setPixmap(self.pfp_pixmap.scaled(30,30,Qt.KeepAspectRatio))
-            self.pfp_label.setGeometry(10+ cmp_3_x_offset,10+ cmp_3_y_offset,30,30)
-            welcome_txt = "Welcome,\n" + username
-        except:
-            self.pfp_label.setText(":(")
-            self.pfp_label.setFont(QFont(app_font,25))
-            self.pfp_label.setGeometry(20+ cmp_3_x_offset,8+ cmp_3_y_offset,30,30)
-            welcome_txt = "OOPS!\n" + "Check your connection!"
-        # --------------------------------------------------------------------------
-
-        # Welcome label to welcome the user in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont(app_font,12))
-        self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        self.cmp_3_create(40,0)
         
         # Components set 2
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        # Target search / Advanced search label in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.search_label = QLabel("Target search",self)
-        self.search_label.setFont(QFont(app_font))
-        self.search_label.setStyleSheet("color: #ffffff")
-        self.search_label.setGeometry(10+cmp_2_x_offset,45+cmp_2_y_offset,200,15)
-        # --------------------------------------------------------------------------
-
-        # Target search support label in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.target_label = QLabel("Enter Target ID :", self)
-        self.target_label.setFont(QFont(app_font,12))
-        self.target_label.setGeometry(10+cmp_2_x_offset,60+cmp_2_y_offset,200,30)
-        # --------------------------------------------------------------------------
-
-        # Target ID input textbox in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont(app_font,15))
-        self.target_search_input.setPlaceholderText("eg: TIC 42173628")
-        self.target_search_input.setStyleSheet("""
-                                QLineEdit {
-                                    border-radius:10px;
-                                    background-color: #ffffff;
-                                    color: #000000;
-                                    }
-                                """)
-        self.target_search_input.setGeometry(10+cmp_2_x_offset,90+cmp_2_y_offset,150,30)
-        self.target_search_input.setAlignment(Qt.AlignCenter)
-        # --------------------------------------------------------------------------
-
-        # Search button for target search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.target_search_btn = QPushButton(self)
-        self.target_search_btn.setFont(QFont(app_font,15))
-        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
-        self.target_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.target_search_btn.setGeometry(260+cmp_2_x_offset,90+cmp_2_y_offset,50,30)
-        self.target_search_btn.clicked.connect(self.search_clicked)
-        # --------------------------------------------------------------------------
-
-        # mission select dropdown box in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.mission_comboBox = QComboBox(self)
-        self.mission_comboBox.setGeometry(165+cmp_2_x_offset,90+cmp_2_y_offset,50,30)
-        self.mission_comboBox.addItems(['All','Kepler','K2','TESS'
-                                    ])
-        self.mission_comboBox.setStyleSheet("""
-                                QComboBox {
-                                    border: 3px solid gray;
-                                    border-radius: 5px;
-                                    padding: 1px 18px 1px 3px;
-                                    min-width: 4em;
-                                }
-                                """)
-        # --------------------------------------------------------------------------
-
-        # search_progressBar in Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.search_progressBar = QProgressBar(self)
-        self.search_progressBar.setGeometry(10+cmp_2_x_offset,130+cmp_2_y_offset,150,10)
-        self.search_progressBar.setMaximum(0)
-        self.search_progressBar.setMinimum(0)
+        self.cmp_2_create(0,35)
         self.search_progressBar.setHidden(True)
-        # --------------------------------------------------------------------------
 
-        # Validation label for the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.validation_label = QLabel("Enter target id and start hunting!",self)
-        self.validation_label.setGeometry(10+cmp_2_x_offset,140+cmp_2_y_offset,300,30)
-        self.validation_label.setStyleSheet("color:#" + button_hover_hex + ";")
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # Enable and disable filter button depending on length of search result
+        # -------------------------------------------------------------------------
+        try:
+            if len(target_search_result) > 0 :
+                self.advanced_search_btn.setEnabled(True)
+            else:
+                self.advanced_search_btn.setEnabled(False)
+        except:
+            self.advanced_search_btn.setEnabled(False)
 
-        # Search output for targed id in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.target_search_result_scrollable_label = ScrollLabel(self)
-        self.target_search_result_scrollable_label.setGeometry(10, 170, 400, 180)
-        self.target_search_result_scrollable_label.setHidden(True)
-        # --------------------------------------------------------------------------
+        # Component set 6
+        self.cmp_6_create(0,160)
 
-        # Plot Area to display the plots after selecting a sector
-        # --------------------------------------------------------------------------
-        self.target_plot = PlotArea(self)
-        self.target_plot.setGeometry(460, -3, 830, 500)
-        self.target_plot.setHidden(True)
-        # --------------------------------------------------------------------------
-
-
-        # Button to select Sector Analysis in Exo-Detection Screen
-        # --------------------------------------------------------------------------
-        self.sector_btn = QPushButton("Sector Analysis",self)
-        self.sector_btn.setGeometry(470, 500, 150, 20)
-        self.sector_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.sector_btn.clicked.connect(self.sector_clicked)
-        # --------------------------------------------------------------------------
-
-        # Button to select Exoplanet Detection in Exo-Detection Screen
-        # --------------------------------------------------------------------------
-        self.detection_btn = QPushButton("Exoplanet Detection",self)
-        self.detection_btn.setGeometry(470, 530, 150, 20)
-        self.detection_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.detection_btn.clicked.connect(self.detection_clicked)
-        # --------------------------------------------------------------------------
+        # Component set 7
+        self.cmp_7_create(460,490)
         
         # Component set 4
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        # Label to show "Select line type" for plots in Exo-Detection Screen
-        # --------------------------------------------------------------------------
-        self.line_type_label = QLabel("Select line type" , self)
-        self.line_type_label.setGeometry(10 + cmp_4_x_offset, 10 + cmp_4_y_offset, 150, 20)
-        self.line_type_label.setStyleSheet("color:#" + button_hover_hex + ";")
-        # --------------------------------------------------------------------------
-
-        # Radio button to select line type as Line in Exo-Detection Screen 
-        # --------------------------------------------------------------------------
-        self.line_btn = QRadioButton("Line", self)
-        self.line_btn.setGeometry(10+ cmp_4_x_offset,45+ cmp_4_y_offset, 100, 20)
-        self.line_btn.setChecked(True)
-        self.line_btn.toggled.connect(self.switch_plot_radio_clicked)
-        # --------------------------------------------------------------------------
-        
-        # Radio button to select line type as Scatter in Exo-Detection Screen
-        # --------------------------------------------------------------------------
-        self.scatter_btn = QRadioButton("Scatter", self)
-        self.scatter_btn.setGeometry(10+ cmp_4_x_offset, 75+ cmp_4_y_offset, 100, 20)
-        self.scatter_btn.toggled.connect(self.switch_plot_radio_clicked)
-        # --------------------------------------------------------------------------
-
-        # Radio button to select line type as Errorbar in Exo-Detection Screen
-        # --------------------------------------------------------------------------
-        self.river_btn = QRadioButton("Error Bar", self)
-        self.river_btn.setGeometry(10+ cmp_4_x_offset, 105+ cmp_4_y_offset, 100, 20)
-        #self.river_btn.setEnabled(False)
-        self.river_btn.toggled.connect(self.switch_plot_radio_clicked)
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+        self.cmp_4_create(640,490)
 
         # Components set 1
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        self.cmp_1_create(750,490)
+
+        # Components set 5
+        self.cmp_5_create(0,55)
+        self.cmp_5_visibility(True)
+
+        # Components set 8
+        self.cmp_8_create(0,350)
+
+        # Component set 9
+        self.cmp_9_create(450,-13)
+
+        # Component set 10
+        self.cmp_10_create(0,0)
+
+        # Component set 11
+        self.cmp_11_create(400,0)
+
+        try:
+            self.target_search_input.setText(target_search_id)
+            if len(target_search_result) > 0 :
+                self.setFixedHeight(420)
+                self.target_search_result_scrollable_label.setText(str(target_search_result))
+                self.target_search_result_scrollable_label.setHidden(False)
+        except:
+            pass
+
+        filtered = False
+    
+    # Component set 1
+    # -------------------------------------------------------------------------------
+    # Create component
+    def cmp_1_create(self,cmp_1_x_offset,cmp_1_y_offset):
+
+        # Components set 1
         # Label to show "Plot Light Curve" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------        
         self.lightcurve_label = QLabel("Plot Light Curve" , self)
@@ -896,294 +735,8 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-        #self.binned_plot_btn.clicked.connect(self.bls_btn_clicked)
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        # Advanced search dropdown box in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.adv_select = QComboBox(self)
-        self.adv_select.setGeometry(10,65,150,18)
-        self.adv_select.addItems(['calib_level',"objID","obsid","sequence_number","distance","em_max","em_min",
-                                    "s_ra","srcDen","t_exptime","t_max","t_min","mtFlag","dataRights",
-                                    "dataURL","dataproduct_type","filters","instrument_name","intentType",
-                                    "jpegURL","obs_collection","obs_id","obs_title","project",
-                                    "proposal_id","proposal_pi","proposal_type","provenance_name",
-                                    "s_region","target_classification","target_name","wavelength_region"
-                                    ])
-        self.adv_select.setStyleSheet("""
-                                QComboBox {
-                                    border: 1px solid gray;
-                                    border-radius: 3px;
-                                    padding: 1px 18px 1px 3px;
-                                    min-width: 6em;
-                                }
-                                """)
-        self.adv_select.activated.connect(self.adv_search_parameter_select_clicked)
-        self.adv_select.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Advanced search hyperlink for parameters description in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.adv_search_learn_more = QLabel(self)
-        self.adv_search_learn_more.setText('''<a href='https://mast.stsci.edu/api/v0/_c_a_o_mfields.html'>Learn more about these parameters here</a>''')
-        self.adv_search_learn_more.openExternalLinks()
-        self.adv_search_learn_more.setOpenExternalLinks(True)
-        self.adv_search_learn_more.setGeometry(170,65,300,18)
-        self.adv_search_learn_more.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Advanced search parameter input value in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont(app_font,15))
-        self.adv_search_input.setPlaceholderText("Enter value")
-        self.adv_search_input.setStyleSheet("""
-                                QLineEdit {
-                                    border-radius:10px;
-                                    background-color: #ffffff;
-                                    color: #000000;
-                                    }
-                                """)
-        self.adv_search_input.setGeometry(10,90,350,30)
-        self.adv_search_input.setAlignment(Qt.AlignCenter)
-        self.adv_search_input.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Add button for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.add_advanced_search_btn = QPushButton(self)
-        self.add_advanced_search_btn.setFont(QFont(app_font,15))
-        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
-        self.add_advanced_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.add_advanced_search_btn.setGeometry(370,90,30,30)
-        self.add_advanced_search_btn.clicked.connect(self.adv_search_add_clicked)
-        self.add_advanced_search_btn.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Undo button for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.undo_advanced_search_btn = QPushButton(self)
-        self.undo_advanced_search_btn.setFont(QFont(app_font,15))
-        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
-        self.undo_advanced_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.undo_advanced_search_btn.setGeometry(10,130,30,30)
-        self.undo_advanced_search_btn.clicked.connect(self.adv_search_undo_clicked)
-        self.undo_advanced_search_btn.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Clear button for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.clear_advanced_search_btn = QPushButton(self)
-        self.clear_advanced_search_btn.setFont(QFont(app_font,15))
-        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
-        self.clear_advanced_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.clear_advanced_search_btn.setGeometry(50,130,30,30)
-        self.clear_advanced_search_btn.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Parameters input validation for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected parameters are displayed below",self)
-        self.parameter_validation_label.setGeometry(10,190,400,30)
-        self.parameter_validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
-        self.parameter_validation_label.setHidden(True)
-        # --------------------------------------------------------------------------
-        
-        # Selected parameters label for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.selected_parameters_label = QLabel("Selected Parameters: ",self)
-        self.selected_parameters_label.setGeometry(10,230,200,10)
-        self.selected_parameters_label.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Scrollable text field for selected parameters for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.adv_selected_paramters = ScrollLabel(self)
-        self.adv_selected_paramters.setGeometry(10,250,400,100)
-        self.adv_selected_paramters.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Search results label for advaned search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.search_results_selected_parameters_label = QLabel("Search results: ",self)
-        self.search_results_selected_parameters_label.setGeometry(10,360,200,10)
-        self.search_results_selected_parameters_label.setHidden(True)
-        # --------------------------------------------------------------------------
-       
-        # Advanced search button for target search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.advanced_search_btn = QPushButton("Filter Search",self)
-        self.advanced_search_btn.setFont(QFont(app_font,15))
-        self.advanced_search_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.advanced_search_btn.setGeometry(320,90,120,30)
-        self.advanced_search_btn.clicked.connect(self.adv_clicked)
-
-        # Enable and disable filter button depending on length of search result
-        # -------------------------------------------------------------------------
-        try:
-            if len(target_search_result) > 0 :
-                self.advanced_search_btn.setEnabled(True)
-            else:
-                self.advanced_search_btn.setEnabled(False)
-        except:
-            self.advanced_search_btn.setEnabled(False)
-        
-         # -------------------------------------------------------------------------- 
-
-        
-        # --------------------------------------------------------------------------
-
-        # Target search button for advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.target_screen_btn = QPushButton("Back To Target Search",self)
-        self.target_screen_btn.setFont(QFont(app_font,15))
-        self.target_screen_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.target_screen_btn.setGeometry(240,130,200,30)
-        self.target_screen_btn.clicked.connect(self.target_screen_clicked)
-        self.target_screen_btn.setHidden(True)
-        # --------------------------------------------------------------------------
-
-        # Select from table label for target/advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont(app_font,12))
-        self.select_label.setStyleSheet("color: #ffffff")
-        self.select_label.setGeometry(10,360,100,10)
-        # --------------------------------------------------------------------------
-
-        # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont(app_font,15))
-        self.select_input.setPlaceholderText(" eg: 0 or 1 ")
-        self.select_input.setStyleSheet("""
-                                QLineEdit {
-                                    border-radius:10px;
-                                    background-color: #ffffff;
-                                    color: #000000;
-                                    }
-                                """)
-        self.select_input.setGeometry(10,380,80,30)
-        self.select_input.setAlignment(Qt.AlignCenter)
-        # --------------------------------------------------------------------------
-
-        # Select button for target/advanced search in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.select_btn = QPushButton(self)
-        self.select_btn.setFont(QFont(app_font,15))
-        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
-        self.select_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.select_btn.setGeometry(100,380,50,30)
-        self.select_btn.clicked.connect(self.select_clicked)
-        # --------------------------------------------------------------------------
-
-        # Back button to go to Select screen from the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.back_btn = QPushButton(self)
-        self.back_btn.setFont(QFont(app_font,15))
-        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
-        self.back_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + button_alt_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.back_btn.setGeometry(10,10,30,30)
-        self.back_btn.clicked.connect(self.back_click)
-        # --------------------------------------------------------------------------
-
-        # Logout button to go to login screen from Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.lgout_btn = QPushButton(self)
-        self.lgout_btn.setFont(QFont(app_font,15))
-        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
-        self.lgout_btn.setStyleSheet("""
-                                QPushButton {
-                                    border-radius:10px;
-                                    background-color: #""" + logout_color_hex + """;
-                                    }
-                                QPushButton:hover {
-                                    background-color: #""" + button_hover_hex + """;
-                                    color: #000000
-                                    }
-                                """)
-        self.lgout_btn.setGeometry(410,10,30,30)
-        self.lgout_btn.clicked.connect(self.login_click)
-        # --------------------------------------------------------------------------
-        try:
-            self.target_search_input.setText(target_search_id)
-            if len(target_search_result) > 0 :
-                self.setFixedHeight(420)
-                self.target_search_result_scrollable_label.setText(str(target_search_result))
-                self.target_search_result_scrollable_label.setHidden(False)
-        except:
-            pass
-
-        filtered = False
-    
-    # Component set 1
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      
     # Component set 1 visibility function
-    # --------------------------------------------------------------------------
     def cmp_1_visibility(self,bool):
         self.bins_label.setHidden(bool)
         self.sigma_label.setHidden(bool)
@@ -1206,13 +759,114 @@ class ExoDetection(QWidget):
         self.niters_input.setHidden(bool)
         self.poly_order_input.setHidden(bool)
         self.window_length_input.setHidden(bool)
-    
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+    #-------------------------------------------------------------------------------
+
     # Component set 2
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+    #-------------------------------------------------------------------------------
+    # Create components set 2
+    def cmp_2_create(self,cmp_2_x_offset,cmp_2_y_offset):
+        # Components set 2
+
+        # Target search / Advanced search label in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.search_label = QLabel("Target search",self)
+        self.search_label.setFont(QFont(app_font))
+        self.search_label.setStyleSheet("color: #ffffff")
+        self.search_label.setGeometry(10+cmp_2_x_offset,10+cmp_2_y_offset,200,15)
+        # --------------------------------------------------------------------------
+
+        # Target search support label in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_label = QLabel("Enter Target ID :", self)
+        self.target_label.setFont(QFont(app_font,12))
+        self.target_label.setGeometry(10+cmp_2_x_offset,25+cmp_2_y_offset,200,30)
+        # --------------------------------------------------------------------------
+
+        # Target ID input textbox in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_search_input = QLineEdit(self)
+        self.target_search_input.setFont(QFont(app_font,15))
+        self.target_search_input.setPlaceholderText("eg: TIC 42173628")
+        self.target_search_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.target_search_input.setGeometry(10+cmp_2_x_offset,55+cmp_2_y_offset,150,30)
+        self.target_search_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
+
+        # mission select dropdown box in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.mission_comboBox = QComboBox(self)
+        self.mission_comboBox.setGeometry(165+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
+        self.mission_comboBox.addItems(['All','Kepler','K2','TESS'
+                                    ])
+        self.mission_comboBox.setStyleSheet("""
+                                QComboBox {
+                                    border: 3px solid gray;
+                                    border-radius: 5px;
+                                    padding: 1px 18px 1px 3px;
+                                    min-width: 4em;
+                                }
+                                """)
+        # --------------------------------------------------------------------------
+
+        # Search button for target search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_search_btn = QPushButton(self)
+        self.target_search_btn.setFont(QFont(app_font,15))
+        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
+        self.target_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.target_search_btn.setGeometry(260+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
+        self.target_search_btn.clicked.connect(self.search_clicked)
+        # --------------------------------------------------------------------------
+
+        # Advanced search button for target search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.advanced_search_btn = QPushButton("Filter Search",self)
+        self.advanced_search_btn.setFont(QFont(app_font,15))
+        self.advanced_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.advanced_search_btn.setGeometry(315+cmp_2_x_offset,55+cmp_2_y_offset,120,30)
+        self.advanced_search_btn.clicked.connect(self.adv_clicked)
+
+
+        # progress_bar_exo_detection in Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.search_progressBar = QProgressBar(self)
+        self.search_progressBar.setGeometry(10+cmp_2_x_offset,105+cmp_2_y_offset,150,10)
+        self.search_progressBar.setMaximum(0)
+        self.search_progressBar.setMinimum(0)
+        self.search_progressBar.setHidden(False)
+        # --------------------------------------------------------------------------
+
+        # Validation label for the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.validation_label = QLabel("Enter target id and start hunting!",self)
+        self.validation_label.setGeometry(10+cmp_2_x_offset,105+cmp_2_y_offset,300,30)
+        self.validation_label.setStyleSheet("color:#" + button_hover_hex + ";")
+    
     # Search button click function for target search in the Exo-Planet Detection screen
-    # --------------------------------------------------------------------------
     def search_clicked(self):
         global target_search_result_scrollable_label
         global target_search_id
@@ -1250,10 +904,41 @@ class ExoDetection(QWidget):
             # Step 6: Start the thread
             self.thread.start()
             self.thread.finished.connect(self.update_search_results)
+
+    # Advanced search button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
+    def adv_clicked(self):
+        global filtered
+
+        filtered = True
+        self.setFixedHeight(680)
+        self.parameter_validation_label.setHidden(False)
+        self.selected_parameters_label.setHidden(False)
+        self.search_results_selected_parameters_label.setHidden(False)
+        self.adv_selected_parameters_scrollLabel.setHidden(False)
+        self.validation_label.setText("")
+        self.target_search_input.setHidden(True)
+        self.mission_comboBox.setHidden(True)
+        self.search_label.setText("Advanced Search")
+        self.target_search_btn.setHidden(True)
+        self.target_label.setHidden(True)
+        self.adv_select_comboBox.setHidden(False)
+        self.adv_search_input.setHidden(False)
+        self.advanced_search_btn.setHidden(True)
+        self.adv_search_learn_more_label.setHidden(False)
+        self.add_advanced_search_btn.setHidden(False)
+        self.undo_advanced_search_btn.setHidden(False)
+        self.clear_advanced_search_btn.setHidden(False)
+        self.target_screen_btn.setHidden(False)
+   
+        self.validation_label.setGeometry(10,155,300,30)
+        self.target_search_result_scrollable_label.setGeometry(10,380,400,180)
+        self.target_search_result_scrollable_label.setText(str(target_search_result))
+        self.select_label.setGeometry(10,620,100,10)
+        self.select_input.setGeometry(10,640,80,30)
+        self.select_btn.setGeometry(100,640,50,30)
 
     # Component set 2 visibility function
-    #---------------------------------------------------------------------------
     def cmp_2_visibility(self,bool):
         self.search_label.setHidden(bool)
         self.target_label.setHidden(bool)
@@ -1262,31 +947,89 @@ class ExoDetection(QWidget):
         self.search_progressBar.setHidden(bool)
         self.mission_comboBox.setHidden(bool)
         self.target_search_input.setHidden(bool)
-    #---------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        self.advanced_search_btn.setHidden(bool)
+    #-------------------------------------------------------------------------------
 
     # Component set 3
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #-------------------------------------------------------------------------------
+    # Create Components
+    def cmp_3_create(self,cmp_3_x_offset,cmp_3_y_offset):
+
+        # Component set 3
+        # Generating and displaying profile picture for the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.pfp_label  = QLabel(self)
+        self.pfp_pixmap = QPixmap()
+        pfp_url = self.create_url()
+
+        try:
+            request = requests.get(pfp_url)
+            avatar = request.content
+            network_status = True
+            self.pfp_pixmap.loadFromData(avatar)
+            self.pfp_label.setPixmap(self.pfp_pixmap.scaled(30,30,Qt.KeepAspectRatio))
+            self.pfp_label.setGeometry(10+ cmp_3_x_offset,10+ cmp_3_y_offset,30,30)
+            welcome_txt = "Welcome,\n" + username
+        except:
+            self.pfp_label.setText(":(")
+            self.pfp_label.setFont(QFont(app_font,25))
+            self.pfp_label.setGeometry(20+ cmp_3_x_offset,8+ cmp_3_y_offset,30,30)
+            welcome_txt = "OOPS!\n" + "Check your connection!"
+        # --------------------------------------------------------------------------
+
+        # Welcome label to welcome the user in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.welcome_label = QLabel(welcome_txt,self)
+        self.welcome_label.setFont(QFont(app_font,12))
+        self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
+       
     # Generate url for profile picture for Exo-Planet Detection screen
-    # --------------------------------------------------------------------------
     def create_url(self):
         url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
         return url
-    #---------------------------------------------------------------------------
 
-    # Component set 2 visibility function
-    #---------------------------------------------------------------------------
+    # Component set 3 visibility function
     def cmp_3_visibility(self,bool):
         self.pfp_label.setHidden(bool)
         self.welcome_label.setHidden(bool)
-    #---------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    #-------------------------------------------------------------------------------
 
     # Component set 4
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #-------------------------------------------------------------------------------
+    # Create component 4
+    def cmp_4_create(self,cmp_4_x_offset,cmp_4_y_offset):
+
+        # Component set 4
+        # Label to show "Select line type" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.line_type_label = QLabel("Select line type" , self)
+        self.line_type_label.setGeometry(10 + cmp_4_x_offset, 10 + cmp_4_y_offset, 150, 20)
+        self.line_type_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Radio button to select line type as Line in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.line_radioBtn = QRadioButton("Line", self)
+        self.line_radioBtn.setGeometry(10+ cmp_4_x_offset,45+ cmp_4_y_offset, 100, 20)
+        self.line_radioBtn.setChecked(True)
+        self.line_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+        
+        # Radio button to select line type as Scatter in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.scatter_radioBtn = QRadioButton("Scatter", self)
+        self.scatter_radioBtn.setGeometry(10+ cmp_4_x_offset, 75+ cmp_4_y_offset, 100, 20)
+        self.scatter_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+
+        # Radio button to select line type as Errorbar in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.error_radioBtn = QRadioButton("Error Bar", self)
+        self.error_radioBtn.setGeometry(10+ cmp_4_x_offset, 105+ cmp_4_y_offset, 100, 20)
+        #self.river_btn.setEnabled(False)
+        self.error_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
+      
     # Switch plot according to selected radio button  
-    # --------------------------------------------------------------------------
     def switch_plot_radio_clicked(self):
         
         if bls_fold_clicked == True :
@@ -1315,24 +1058,178 @@ class ExoDetection(QWidget):
                 self.target_plot.update_plot(1,self.plot_type_select.currentIndex())
             else:
                 self.target_plot.update_plot(2,self.plot_type_select.currentIndex())
-    # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    # Component 4 visibility
+    def cmp_4_visibility(self,bool):
+        self.line_type_label.setHidden(bool)
+        self.line_radioBtn.setHidden(bool)
+        self.error_radioBtn.setHidden(bool)
+        self.scatter_radioBtn.setHidden(bool)
+    #-------------------------------------------------------------------------------
+
+    # Component 5 
+    #-------------------------------------------------------------------------------
+    # Create component 5
+    def cmp_5_create(self,cmp_5_x_offset,cmp_5_y_offset):
+        # Advanced search dropdown box in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.adv_select_comboBox = QComboBox(self)
+        self.adv_select_comboBox.setGeometry(10+cmp_5_x_offset,10+cmp_5_y_offset,150,18)
+        self.adv_select_comboBox.addItems(['calib_level',"objID","obsid","sequence_number","distance","em_max","em_min",
+                                    "s_ra","srcDen","t_exptime","t_max","t_min","mtFlag","dataRights",
+                                    "dataURL","dataproduct_type","filters","instrument_name","intentType",
+                                    "jpegURL","obs_collection","obs_id","obs_title","project",
+                                    "proposal_id","proposal_pi","proposal_type","provenance_name",
+                                    "s_region","target_classification","target_name","wavelength_region"
+                                    ])
+        self.adv_select_comboBox.setStyleSheet("""
+                                QComboBox {
+                                    border: 1px solid gray;
+                                    border-radius: 3px;
+                                    padding: 1px 18px 1px 3px;
+                                    min-width: 6em;
+                                }
+                                """)
+        self.adv_select_comboBox.activated.connect(self.adv_search_parameter_select_clicked)
+        # --------------------------------------------------------------------------
+
+        # Advanced search hyperlink for parameters description in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.adv_search_learn_more_label = QLabel(self)
+        self.adv_search_learn_more_label.setText('''<a href='https://mast.stsci.edu/api/v0/_c_a_o_mfields.html'>Learn more about these parameters here</a>''')
+        self.adv_search_learn_more_label.openExternalLinks()
+        self.adv_search_learn_more_label.setOpenExternalLinks(True)
+        self.adv_search_learn_more_label.setGeometry(170+cmp_5_x_offset,10+cmp_5_y_offset,300,18)
+        # --------------------------------------------------------------------------
+
+        # Advanced search parameter input value in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.adv_search_input = QLineEdit(self)
+        self.adv_search_input.setFont(QFont(app_font,15))
+        self.adv_search_input.setPlaceholderText("Enter value")
+        self.adv_search_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.adv_search_input.setGeometry(10+cmp_5_x_offset,35+cmp_5_y_offset,350,30)
+        self.adv_search_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
+
+        # Add button for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.add_advanced_search_btn = QPushButton(self)
+        self.add_advanced_search_btn.setFont(QFont(app_font,15))
+        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
+        self.add_advanced_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.add_advanced_search_btn.setGeometry(370+cmp_5_x_offset,35+cmp_5_y_offset,30,30)
+        self.add_advanced_search_btn.clicked.connect(self.adv_search_add_clicked)
+        # --------------------------------------------------------------------------
+
+        # Undo button for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.undo_advanced_search_btn = QPushButton(self)
+        self.undo_advanced_search_btn.setFont(QFont(app_font,15))
+        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
+        self.undo_advanced_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.undo_advanced_search_btn.setGeometry(10+cmp_5_x_offset,75+cmp_5_y_offset,30,30)
+        self.undo_advanced_search_btn.clicked.connect(self.adv_search_undo_clicked)
+        # --------------------------------------------------------------------------
+
+        # Clear button for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.clear_advanced_search_btn = QPushButton(self)
+        self.clear_advanced_search_btn.setFont(QFont(app_font,15))
+        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
+        self.clear_advanced_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.clear_advanced_search_btn.setGeometry(50+cmp_5_x_offset,75+cmp_5_y_offset,30,30)
+        # --------------------------------------------------------------------------
+
+        # Parameters input validation for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.parameter_validation_label = QLabel("Add parameters and search, undo or clear.\nselected parameters are displayed below",self)
+        self.parameter_validation_label.setGeometry(10+cmp_5_x_offset,135+cmp_5_y_offset,400,30)
+        self.parameter_validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+        
+        # Selected parameters label for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.selected_parameters_label = QLabel("Selected Parameters: ",self)
+        self.selected_parameters_label.setGeometry(10+cmp_5_x_offset,175+cmp_5_y_offset,200,10)
+        # --------------------------------------------------------------------------
+
+        # Scrollable text field for selected parameters for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.adv_selected_parameters_scrollLabel = ScrollLabel(self)
+        self.adv_selected_parameters_scrollLabel.setGeometry(10+cmp_5_x_offset,175+cmp_5_y_offset,400,100)
+        # --------------------------------------------------------------------------
+
+        # Search results label for advaned search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.search_results_selected_parameters_label = QLabel("Search results: ",self)
+        self.search_results_selected_parameters_label.setGeometry(10+cmp_5_x_offset,305+cmp_5_y_offset,200,10)
+        # --------------------------------------------------------------------------
+
+         
+        # Target search button for advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_screen_btn = QPushButton("Back To Target Search",self)
+        self.target_screen_btn.setFont(QFont(app_font,15))
+        self.target_screen_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.target_screen_btn.setGeometry(240+cmp_5_x_offset,75+cmp_5_y_offset,200,30)
+        self.target_screen_btn.clicked.connect(self.target_screen_clicked)
+    
     # Parameter select data type validaion message in advanced search in  the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def adv_search_parameter_select_clicked(self):
     
-        if self.adv_select.currentIndex() < 4 :
-            self.adv_search_input.setPlaceholderText("Input integers to search " + self.adv_select.currentText())
-        elif self.adv_select.currentIndex() < 12 :
-            self.adv_search_input.setPlaceholderText("Input float to search " + self.adv_select.currentText())
-        elif self.adv_select.currentIndex() < 13 :
-            self.adv_search_input.setPlaceholderText("Input boolean(True/False) to search " + self.adv_select.currentText())
+        if self.adv_select_comboBox.currentIndex() < 4 :
+            self.adv_search_input.setPlaceholderText("Input integers to search " + self.adv_select_comboBox.currentText())
+        elif self.adv_select_comboBox.currentIndex() < 12 :
+            self.adv_search_input.setPlaceholderText("Input float to search " + self.adv_select_comboBox.currentText())
+        elif self.adv_select_comboBox.currentIndex() < 13 :
+            self.adv_search_input.setPlaceholderText("Input boolean(True/False) to search " + self.adv_select_comboBox.currentText())
         else: 
-            self.adv_search_input.setPlaceholderText("Input string to search " + self.adv_select.currentText())
-    
-     # -------------------------------------------------------------------------- 
-          
+            self.adv_search_input.setPlaceholderText("Input string to search " + self.adv_select_comboBox.currentText()) 
+
     # Add parameter button click function in advanced search in  the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def adv_search_add_clicked(self):
@@ -1348,18 +1245,18 @@ class ExoDetection(QWidget):
             try:
                 config_exists = False
                 for x in parameters_text:
-                    if x  == (self.adv_select.currentText() + " value :" + self.adv_search_input.text() + "\n") :
+                    if x  == (self.adv_select_comboBox.currentText() + " value :" + self.adv_search_input.text() + "\n") :
                         self.validation_label.setText("Configuration already exists")
                         config_exists = True
                 if config_exists == False:
-                    if self.adv_select.currentIndex() < 4 :
-                        filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == int(self.adv_search_input.text()))[0]
-                    elif self.adv_select.currentIndex() < 12 :
-                        filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == float(self.adv_search_input.text()))[0]
-                    elif self.adv_select.currentIndex() < 13 :
-                        filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == bool(self.adv_search_input.text()))[0]
+                    if self.adv_select_comboBox.currentIndex() < 4 :
+                        filter = np.where(target_search_result_copy.table[self.adv_select_comboBox.currentText()] == int(self.adv_search_input.text()))[0]
+                    elif self.adv_select_comboBox.currentIndex() < 12 :
+                        filter = np.where(target_search_result_copy.table[self.adv_select_comboBox.currentText()] == float(self.adv_search_input.text()))[0]
+                    elif self.adv_select_comboBox.currentIndex() < 13 :
+                        filter = np.where(target_search_result_copy.table[self.adv_select_comboBox.currentText()] == bool(self.adv_search_input.text()))[0]
                     else: 
-                        filter = np.where(target_search_result_copy.table[self.adv_select.currentText()] == self.adv_search_input.text())[0]
+                        filter = np.where(target_search_result_copy.table[self.adv_select_comboBox.currentText()] == self.adv_search_input.text())[0]
                     
                     filter_array.append(filter)
                     target_search_result_copy = target_search_result
@@ -1369,25 +1266,12 @@ class ExoDetection(QWidget):
 
                     self.validation_label.setText("Updated search results")
                     self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
-                    parameters_text.append(self.adv_select.currentText() + " value :" + self.adv_search_input.text() + "\n")
+                    parameters_text.append(self.adv_select_comboBox.currentText() + " value :" + self.adv_search_input.text() + "\n")
                     self.update_parameters_display()
                     self.target_search_result_scrollable_label.setText(str(target_search_result_copy))
                     self.adv_search_parameter_select_clicked()
             except:
                 self.validation_label.setText("Invalid datatype entered")
-            
-    
-    # -------------------------------------------------------------------------- 
-
-    # Update parameters display when new parameters are added to the filter in the advanced search in Exo-Detection Screen
-    # --------------------------------------------------------------------------    
-    def update_parameters_display(self):
-        parameters_display_text = ""
-        for x in parameters_text:
-            parameters_display_text = parameters_display_text + x
-        self.adv_selected_paramters.setText(parameters_display_text)
-    
-     # -------------------------------------------------------------------------- 
 
     # Undo function in advanced search in Exo-Detection Screen
     # -------------------------------------------------------------------------- 
@@ -1412,9 +1296,7 @@ class ExoDetection(QWidget):
         self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
         self.update_parameters_display()
         self.target_search_result_scrollable_label.setText(str(target_search_result_copy))
-    
-     # -------------------------------------------------------------------------- 
-
+              
     # Target search button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def target_screen_clicked(self):
@@ -1423,109 +1305,136 @@ class ExoDetection(QWidget):
             window.close()
             window = ExoDetection()
         window.show()
+   
+    # component 5 visibility
+    def cmp_5_visibility(self,bool):
+        self.selected_parameters_label.setHidden(bool)
+        self.parameter_validation_label.setHidden(bool)
+        self.search_results_selected_parameters_label.setHidden(bool)
+        self.adv_search_learn_more_label.setHidden(bool)
+        self.adv_search_input.setHidden(bool)
+        self.target_screen_btn.setHidden(bool)
+        self.add_advanced_search_btn.setHidden(bool)
+        self.undo_advanced_search_btn.setHidden(bool)
+        self.clear_advanced_search_btn.setHidden(bool)
+        self.adv_select_comboBox.setHidden(bool)
+        self.adv_selected_parameters_scrollLabel.setHidden(bool)
+    #-------------------------------------------------------------------------------
 
-    # --------------------------------------------------------------------------
+    # Component 6
+    #-------------------------------------------------------------------------------
+    def cmp_6_create(self,cmp_6_x_offset,cmp_6_y_offset):
+        # Search output for targed id in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_search_result_scrollable_label = ScrollLabel(self)
+        self.target_search_result_scrollable_label.setGeometry(10 + cmp_6_x_offset, 10 + cmp_6_y_offset , 400, 180)
+        
+    def cmp_6_visibility(self,bool):
+        self.target_search_result_scrollable_label.setHidden(bool)
+    #-------------------------------------------------------------------------------
+
+    # Component 7
+    #-------------------------------------------------------------------------------
+    def cmp_7_create(self,cmp_7_x_offset,cmp_7_y_offset):
+
+        # Button to select Sector Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.sector_btn = QPushButton("Sector Analysis",self)
+        self.sector_btn.setGeometry(10+cmp_7_x_offset,10+ cmp_7_y_offset, 150, 20)
+        self.sector_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.sector_btn.clicked.connect(self.sector_clicked)
+        # --------------------------------------------------------------------------
+
+        # Button to select Exoplanet Detection in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.detection_btn = QPushButton("Exoplanet Detection",self)
+        self.detection_btn.setGeometry(10+cmp_7_x_offset, 40+ cmp_7_y_offset, 150, 20)
+        self.detection_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.detection_btn.clicked.connect(self.detection_clicked)
 
     # Sector button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def sector_clicked(self):
         self.cmp_1_visibility(False)
-
-    # --------------------------------------------------------------------------
+        self.cmp_4_visibility(False)
 
     # Detection button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def detection_clicked(self):
         self.cmp_1_visibility(True)
-
-    # --------------------------------------------------------------------------
+        self.cmp_4_visibility(True)
    
-   # Advanced search button click function in the Exo-Planet Detection screen
-   # --------------------------------------------------------------------------
-    def adv_clicked(self):
-        global filtered
+    def cmp_7_visibility(self,bool):
+        self.sector_btn.setHidden(bool)
+        self.detection_btn.setHidden(bool)    
+    #-------------------------------------------------------------------------------
 
-        filtered = True
-        self.setFixedHeight(680)
-        self.parameter_validation_label.setHidden(False)
-        self.selected_parameters_label.setHidden(False)
-        self.search_results_selected_parameters_label.setHidden(False)
-        self.adv_selected_paramters.setHidden(False)
-        self.validation_label.setText("")
-        self.target_search_input.setHidden(True)
-        self.mission_comboBox.setHidden(True)
-        self.search_label.setText("Advanced Search")
-        self.target_search_btn.setHidden(True)
-        self.target_label.setHidden(True)
-        self.adv_select.setHidden(False)
-        self.adv_search_input.setHidden(False)
-        self.advanced_search_btn.setHidden(True)
-        self.adv_search_learn_more.setHidden(False)
-        self.add_advanced_search_btn.setHidden(False)
-        self.undo_advanced_search_btn.setHidden(False)
-        self.clear_advanced_search_btn.setHidden(False)
-        self.target_screen_btn.setHidden(False)
-   
-        self.validation_label.setGeometry(10,155,300,30)
-        self.target_search_result_scrollable_label.setGeometry(10,380,400,180)
-        self.target_search_result_scrollable_label.setText(str(target_search_result))
-        self.select_label.setGeometry(10,620,100,10)
-        self.select_input.setGeometry(10,640,80,30)
-        self.select_btn.setGeometry(100,640,50,30)
+    # Component 8
+    #-------------------------------------------------------------------------------
+    # Create component
+    def cmp_8_create(self,cmp_8_x_offset,cmp_8_y_offset):
 
-    # --------------------------------------------------------------------------
+        # Select from table label for target/advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.select_label = QLabel("Select from table",self)
+        self.select_label.setFont(QFont(app_font,12))
+        self.select_label.setStyleSheet("color: #ffffff")
+        self.select_label.setGeometry(10+ cmp_8_x_offset,10+cmp_8_y_offset,100,10)
+        # --------------------------------------------------------------------------
 
-    # Display search results after search complete in Exo-Planet detection screen
-    # --------------------------------------------------------------------------
-    def update_search_results(self):
-        global search_result_isDownloaded_error
-        self.validation_label.setGeometry(10,140,300,30)
-        self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
+        # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.select_input = QLineEdit(self)
+        self.select_input.setFont(QFont(app_font,15))
+        self.select_input.setPlaceholderText(" eg: 0 or 1 ")
+        self.select_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.select_input.setGeometry(10+ cmp_8_x_offset,30+ cmp_8_y_offset,80,30)
+        self.select_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
 
-        self.search_progressBar.setHidden(True)
-        if search_result_isDownloaded_error == False:
-            self.validation_label.setText("Here's what we found")
-            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
-            self.setFixedHeight(420)
-            self.target_search_result_scrollable_label.setText(str(target_search_result))
-            self.target_search_result_scrollable_label.setHidden(False) 
-        else:
-            self.target_search_result_scrollable_label.setHidden(True)
-            self.setFixedHeight(170)
-            self.validation_label.setText("!! A working network connection is required !!")
-            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
-
-        self.target_search_btn.setEnabled(True)
-
-        try:
-            if len(target_search_result) > 0 :
-                self.advanced_search_btn.setHidden(False)
-                self.advanced_search_btn.setEnabled(True) 
-        except:
-            pass
+        # Select button for target/advanced search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.select_btn = QPushButton(self)
+        self.select_btn.setFont(QFont(app_font,15))
+        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
+        self.select_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.select_btn.setGeometry(100+ cmp_8_x_offset,30+ cmp_8_y_offset,50,30)
+        self.select_btn.clicked.connect(self.select_clicked)
         
-        # Add search to the database under the user
-        '''
-        ## Adding search to database
-        hist_array = []
-        ref = db.reference('/users')
-        users_ref = ref.child(db_username)
-        user_data = users_ref.get()
-        hist_array = user_data['History']['array']
-
-        if hist_array[0] == 0 :
-            hist_array[0] = self.target_search_input.text()
-        else:
-            hist_array.append(self.target_search_input.text())
-        
-        users_ref.update({
-
-            'History': {"array" : hist_array }
-        })
-        '''
-    # --------------------------------------------------------------------------
-    
-    # --------------------------------------------------------------------------
+    # select sector from search results
     def select_clicked(self):
         global lightcurve
         global select_input
@@ -1604,8 +1513,151 @@ class ExoDetection(QWidget):
             self.validation_label.setGeometry(160,387,300,30)
             self.validation_label.setText("Downloading Lightcurve")
 
+    # Component visibility
+    def cmp_8_visibility(self,bool):
+        self.select_label.setHidden(bool)
+        self.select_btn.setHidden(bool)
+        self.select_input.setHidden(bool)
+    #-------------------------------------------------------------------------------
+
+    # Component 9
+    #-------------------------------------------------------------------------------
+    def cmp_9_create(self,cmp_9_x_offset,cmp_9_y_offset):
+        # Plot Area to display the plots after selecting a sector
+        # --------------------------------------------------------------------------
+        self.target_plot = PlotArea(self)
+        self.target_plot.setGeometry(10 + cmp_9_x_offset,10 + cmp_9_y_offset, 830, 500)
+    
+    def cmp_9_visibility(self,bool):
+        self.target_plot.setHidden(bool)
+    #-------------------------------------------------------------------------------
+   
+    # Component 10
+    #-------------------------------------------------------------------------------
+    def cmp_10_create(self,cmp_10_x_offset,cmp_10_y_offset):
+        # Back button to go to Select screen from the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.back_btn = QPushButton(self)
+        self.back_btn.setFont(QFont(app_font,15))
+        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
+        self.back_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.back_btn.setGeometry(10 + cmp_10_x_offset,10 + cmp_10_y_offset,30,30)
+        self.back_btn.clicked.connect(self.back_click)
+    
+    # Back button click function to take to select screen from the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
+    def back_click(self):
+        global window
+        if self.window is None:
+            window.close()
+            window = Select()
+        window.show()
+    
+    def cmp_10_visibility(self,bool):
+        self.back_btn.setHidden(bool)
+    #-------------------------------------------------------------------------------
+
+    # Component 11
+    def cmp_11_create(self,cmp_11_x_offset,cmp_11_y_offset):
+        # Logout button to go to login screen from Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.lgout_btn = QPushButton(self)
+        self.lgout_btn.setFont(QFont(app_font,15))
+        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
+        self.lgout_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + logout_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.lgout_btn.setGeometry(10+cmp_11_x_offset,10+cmp_11_y_offset,30,30) #410
+        self.lgout_btn.clicked.connect(self.login_click)
+    
+    # logout button click function to take to the login screen from the Exo-Planet Detection screen
+    # --------------------------------------------------------------------------
+    def login_click(self):
+        global window
+        if self.window is None:
+            window.close()
+            window = Login()
+        window.show()
         
+    def cmp_11_visibility(self,bool):
+        self.lgout_btn.setHidden(bool)
+    #-------------------------------------------------------------------------------
+
+    # Update parameters display when new parameters are added to the filter in the advanced search in Exo-Detection Screen
+    # --------------------------------------------------------------------------    
+    def update_parameters_display(self):
+        parameters_display_text = ""
+        for x in parameters_text:
+            parameters_display_text = parameters_display_text + x
+        self.adv_selected_parameters_scrollLabel.setText(parameters_display_text)
+     
+    # Display search results after search complete in Exo-Planet detection screen
+    # --------------------------------------------------------------------------
+    def update_search_results(self):
+        global search_result_isDownloaded_error
+        self.validation_label.setGeometry(10,140,300,30)
+        self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
+
+        self.search_progressBar.setHidden(True)
+        if search_result_isDownloaded_error == False:
+            self.validation_label.setText("Here's what we found")
+            self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
+            self.setFixedHeight(420)
+            self.target_search_result_scrollable_label.setText(str(target_search_result))
+            self.target_search_result_scrollable_label.setHidden(False) 
+        else:
+            self.target_search_result_scrollable_label.setHidden(True)
+            self.setFixedHeight(170)
+            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
+
+        self.target_search_btn.setEnabled(True)
+
+        try:
+            if len(target_search_result) > 0 :
+                self.advanced_search_btn.setHidden(False)
+                self.advanced_search_btn.setEnabled(True) 
+        except:
+            pass
+        
+        # Add search to the database under the user
+        '''
+        ## Adding search to database
+        hist_array = []
+        ref = db.reference('/users')
+        users_ref = ref.child(db_username)
+        user_data = users_ref.get()
+        hist_array = user_data['History']['array']
+
+        if hist_array[0] == 0 :
+            hist_array[0] = self.target_search_input.text()
+        else:
+            hist_array.append(self.target_search_input.text())
+        
+        users_ref.update({
+
+            'History': {"array" : hist_array }
+        })
+        '''
+    
+    # function to update plot 
+    # --------------------------------------------------------------------------
     def update_plot(self):
         global search_result_select_isDownloaded_error
         
@@ -1626,27 +1678,6 @@ class ExoDetection(QWidget):
         self.advanced_search_btn.setEnabled(True)
         self.select_btn.setEnabled(True) 
         self.adv_clicked()
-
-    # logout button click function to take to the login screen from the Exo-Planet Detection screen
-    # --------------------------------------------------------------------------
-    def login_click(self):
-        global window
-        if self.window is None:
-            window.close()
-            window = Login()
-        window.show()
-    # --------------------------------------------------------------------------
-
-    # Back button click function to take to select screen from the Exo-Planet Detection screen
-    # --------------------------------------------------------------------------
-    def back_click(self):
-        global window
-        if self.window is None:
-            window.close()
-            window = Select()
-        window.show()
-    # --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
 
 # Class for sign up screen
 # --------------------------------------------------------------------------
@@ -1883,7 +1914,6 @@ class Signup(QWidget):
             window.close()
             window = Login()
         window.show()
-    # --------------------------------------------------------------------------
 
 # Class for select screen
 # --------------------------------------------------------------------------       
@@ -2066,7 +2096,6 @@ class Select(QWidget):
             window.close()
             window = ExoDetection()
         window.show()
-    # --------------------------------------------------------------------------
 
 # Class for login screen
 # --------------------------------------------------------------------------
@@ -2353,9 +2382,6 @@ class Login(QWidget):
             window.close()
             window = Signup()
         window.show()
-    # --------------------------------------------------------------------------
-
-# --------------------------------------------------------------------------      
 
 # Application start
 # -------------------------------------------------------------------------- 
