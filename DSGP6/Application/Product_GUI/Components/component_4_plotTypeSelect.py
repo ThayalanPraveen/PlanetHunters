@@ -78,12 +78,12 @@ class Component(QWidget):
         height = 450
         self.setStyleSheet("background-color: #" + background_color_hex +";")
 
-        self.create_widgets()
+        self.cmp_4_create()
+        self.cmp_4_visibility(True)
 
-    def create_widgets(self):
+    def cmp_4_create(self):
 
         # Component set 4
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Label to show "Select line type" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------
         self.line_type_label = QLabel("Select line type" , self)
@@ -93,38 +93,37 @@ class Component(QWidget):
 
         # Radio button to select line type as Line in Exo-Detection Screen 
         # --------------------------------------------------------------------------
-        self.line_btn = QRadioButton("Line", self)
-        self.line_btn.setGeometry(10+ cmp_4_x_offset,45+ cmp_4_y_offset, 100, 20)
-        self.line_btn.setChecked(True)
-        self.line_btn.toggled.connect(self.switch_plot_radio_clicked)
+        self.line_radioBtn = QRadioButton("Line", self)
+        self.line_radioBtn.setGeometry(10+ cmp_4_x_offset,45+ cmp_4_y_offset, 100, 20)
+        self.line_radioBtn.setChecked(True)
+        self.line_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
         # --------------------------------------------------------------------------
         
         # Radio button to select line type as Scatter in Exo-Detection Screen
         # --------------------------------------------------------------------------
-        self.scatter_btn = QRadioButton("Scatter", self)
-        self.scatter_btn.setGeometry(10+ cmp_4_x_offset, 75+ cmp_4_y_offset, 100, 20)
-        self.scatter_btn.toggled.connect(self.switch_plot_radio_clicked)
+        self.scatter_radioBtn = QRadioButton("Scatter", self)
+        self.scatter_radioBtn.setGeometry(10+ cmp_4_x_offset, 75+ cmp_4_y_offset, 100, 20)
+        self.scatter_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
         # --------------------------------------------------------------------------
 
         # Radio button to select line type as Errorbar in Exo-Detection Screen
         # --------------------------------------------------------------------------
-        self.river_btn = QRadioButton("Error Bar", self)
-        self.river_btn.setGeometry(10+ cmp_4_x_offset, 105+ cmp_4_y_offset, 100, 20)
+        self.error_radioBtn = QRadioButton("Error Bar", self)
+        self.error_radioBtn.setGeometry(10+ cmp_4_x_offset, 105+ cmp_4_y_offset, 100, 20)
         #self.river_btn.setEnabled(False)
-        self.river_btn.toggled.connect(self.switch_plot_radio_clicked)
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    
+        self.error_radioBtn.toggled.connect(self.switch_plot_radio_clicked)
+        
     # Component set 4
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     # Switch plot according to selected radio button  
-    # --------------------------------------------------------------------------
+    # Switch plot according to selected radio button  
     def switch_plot_radio_clicked(self):   
         pass
-    # --------------------------------------------------------------------------
     
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+    def cmp_4_visibility(self,bool):
+        self.line_type_label.setHidden(bool)
+        self.line_radioBtn.setHidden(bool)
+        self.error_radioBtn.setHidden(bool)
+        self.scatter_radioBtn.setHidden(bool)
+     
     
 
 # Application start

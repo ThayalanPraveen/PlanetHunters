@@ -105,12 +105,11 @@ class Component(QWidget):
         height = 450
         self.setStyleSheet("background-color: #" + background_color_hex +";")
 
-        self.create_widgets()
+        self.cmp_3_create()
 
-    def create_widgets(self):
+    def cmp_3_create(self):
 
         # Component set 3
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Generating and displaying profile picture for the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.pfp_label  = QLabel(self)
@@ -138,11 +137,9 @@ class Component(QWidget):
         self.welcome_label.setFont(QFont(app_font,12))
         self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
         # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     
     # Component set 3
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # Generate url for profile picture for Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def create_url(self):
@@ -153,7 +150,6 @@ class Component(QWidget):
         self.pfp_label.setHidden(bool)
         self.welcome_label.setHidden(bool)
     
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     
 
 # Application start

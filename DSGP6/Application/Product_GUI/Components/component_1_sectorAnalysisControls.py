@@ -54,12 +54,11 @@ class Component(QWidget):
         height = 450
         self.setStyleSheet("background-color: #" + background_color_hex +";")
 
-        self.create_widgets()
+        self.cmp_1_create()
 
-    def create_widgets(self):
+    def cmp_1_create(self):
 
         # Components set 1
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Label to show "Plot Light Curve" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------        
         self.lightcurve_label = QLabel("Plot Light Curve" , self)
@@ -270,12 +269,9 @@ class Component(QWidget):
                                     color: #000000
                                     }
                                 """)
-        #self.binned_plot_btn.clicked.connect(self.bls_btn_clicked)
-        # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+       
 
     # Component set 1
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     def cmp_1_visibility(self,bool):
         self.bins_label.setHidden(bool)
         self.sigma_label.setHidden(bool)
@@ -298,7 +294,6 @@ class Component(QWidget):
         self.niters_input.setHidden(bool)
         self.poly_order_input.setHidden(bool)
         self.window_length_input.setHidden(bool)
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Application start
 # -------------------------------------------------------------------------- 
