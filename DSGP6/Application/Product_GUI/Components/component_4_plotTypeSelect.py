@@ -1,51 +1,24 @@
 ##########################################################################
-# Component ID : 3
-# Function : Display profile picture and welcome message
+# Component ID : 4
+# Function : Display different plot types to select from
 
 # Offset Control
 #-----------------
-cmp_3_x_offset = 0
-cmp_3_y_offset = 0
+cmp_4_x_offset = 0
+cmp_4_y_offset = 0
 #-----------------
-
-# Component Variables
-# -----------------
-avatar = None # component_3
-pfp_load = False # component_3
-network_status = False # component_3
-username = "" # component_3
-# -----------------
 
 ###########################################################################
 
 
 # Imports, variables and themes of components
 ###########################################################################
-import time
-import PySide6
+
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
-import json
-from matplotlib import use
-import pandas as pd
-import os
-import joblib
-import lightkurve as lk
-import matplotlib.pyplot
-import numpy as np
-import matplotlib.pyplot as plt
-import requests
-import firebase_admin
-from firebase_admin import db
 import sys
-import firebase_admin
-from firebase_admin import credentials
-from cryptography.fernet import Fernet
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
+
 
 
 # Application font
@@ -109,51 +82,49 @@ class Component(QWidget):
 
     def create_widgets(self):
 
-        # Component set 3
+        # Component set 4
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        # Generating and displaying profile picture for the Exo-Planet Detection screen
+        # Label to show "Select line type" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------
-        self.pfp_label  = QLabel(self)
-        self.pfp_pixmap = QPixmap()
-        pfp_url = self.create_url()
-
-        try:
-            request = requests.get(pfp_url)
-            avatar = request.content
-            network_status = True
-            self.pfp_pixmap.loadFromData(avatar)
-            self.pfp_label.setPixmap(self.pfp_pixmap.scaled(30,30,Qt.KeepAspectRatio))
-            self.pfp_label.setGeometry(10+ cmp_3_x_offset,10+ cmp_3_y_offset,30,30)
-            welcome_txt = "Welcome,\n" + username
-        except:
-            self.pfp_label.setText(":(")
-            self.pfp_label.setFont(QFont(app_font,25))
-            self.pfp_label.setGeometry(20+ cmp_3_x_offset,8+ cmp_3_y_offset,30,30)
-            welcome_txt = "OOPS!\n" + "Check your connection!"
+        self.line_type_label = QLabel("Select line type" , self)
+        self.line_type_label.setGeometry(10 + cmp_4_x_offset, 10 + cmp_4_y_offset, 150, 20)
+        self.line_type_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
-        # Welcome label to welcome the user in the Exo-Planet Detection screen
+        # Radio button to select line type as Line in Exo-Detection Screen 
         # --------------------------------------------------------------------------
-        self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont(app_font,12))
-        self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
+        self.line_btn = QRadioButton("Line", self)
+        self.line_btn.setGeometry(10+ cmp_4_x_offset,45+ cmp_4_y_offset, 100, 20)
+        self.line_btn.setChecked(True)
+        self.line_btn.toggled.connect(self.switch_plot_radio_clicked)
         # --------------------------------------------------------------------------
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        # Radio button to select line type as Scatter in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.scatter_btn = QRadioButton("Scatter", self)
+        self.scatter_btn.setGeometry(10+ cmp_4_x_offset, 75+ cmp_4_y_offset, 100, 20)
+        self.scatter_btn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+
+        # Radio button to select line type as Errorbar in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.river_btn = QRadioButton("Error Bar", self)
+        self.river_btn.setGeometry(10+ cmp_4_x_offset, 105+ cmp_4_y_offset, 100, 20)
+        #self.river_btn.setEnabled(False)
+        self.river_btn.toggled.connect(self.switch_plot_radio_clicked)
+        # --------------------------------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     
-    # Component set 3
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # Generate url for profile picture for Exo-Planet Detection screen
+    # Component set 4
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     # Switch plot according to selected radio button  
     # --------------------------------------------------------------------------
-    def create_url(self):
-        url = 'https://avatars.dicebear.com/api/bottts/' + username + '.svg?background=%23' + background_color_hex
-        return url
+    def switch_plot_radio_clicked(self):   
+        pass
+    # --------------------------------------------------------------------------
     
-    def cmp_3_visibility(self,bool):
-        self.pfp_label.setHidden(bool)
-        self.welcome_label.setHidden(bool)
-    
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     
 
 # Application start

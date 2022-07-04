@@ -12,31 +12,12 @@ cmp_1_y_offset = 0
 
 # Imports and themes of components
 ###########################################################################
-import time
-import PySide6
+
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
-import json
-from matplotlib import use
-import pandas as pd
-import os
-import joblib
-import lightkurve as lk
-import matplotlib.pyplot
-import numpy as np
-import matplotlib.pyplot as plt
-import requests
-import firebase_admin
-from firebase_admin import db
 import sys
-import firebase_admin
-from firebase_admin import credentials
-from cryptography.fernet import Fernet
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
+import os
 
 # Application font
 # --------------------------------------------------------------------------
@@ -78,7 +59,7 @@ class Component(QWidget):
     def create_widgets(self):
 
         # Components set 1
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Label to show "Plot Light Curve" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------        
         self.lightcurve_label = QLabel("Plot Light Curve" , self)
@@ -291,9 +272,10 @@ class Component(QWidget):
                                 """)
         #self.binned_plot_btn.clicked.connect(self.bls_btn_clicked)
         # --------------------------------------------------------------------------
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+    # Component set 1
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     def cmp_1_visibility(self,bool):
         self.bins_label.setHidden(bool)
         self.sigma_label.setHidden(bool)
@@ -316,7 +298,7 @@ class Component(QWidget):
         self.niters_input.setHidden(bool)
         self.poly_order_input.setHidden(bool)
         self.window_length_input.setHidden(bool)
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Application start
 # -------------------------------------------------------------------------- 

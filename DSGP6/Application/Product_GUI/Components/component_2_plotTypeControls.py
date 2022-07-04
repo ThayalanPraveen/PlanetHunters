@@ -12,31 +12,13 @@ cmp_2_y_offset = 0
 
 # Imports and themes of components
 ###########################################################################
-import time
+
 import PySide6
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
-import json
-from matplotlib import use
-import pandas as pd
-import os
-import joblib
-import lightkurve as lk
-import matplotlib.pyplot
-import numpy as np
-import matplotlib.pyplot as plt
-import requests
-import firebase_admin
-from firebase_admin import db
 import sys
-import firebase_admin
-from firebase_admin import credentials
-from cryptography.fernet import Fernet
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
+import os
 
 # Application font
 # --------------------------------------------------------------------------
@@ -76,7 +58,7 @@ class Component(QWidget):
     
     def create_widgets(self):
         # Components set 2
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         # Target search / Advanced search label in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
@@ -159,20 +141,23 @@ class Component(QWidget):
         self.validation_label.setGeometry(10+cmp_2_x_offset,140+cmp_2_y_offset,300,30)
         self.validation_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        
+    # Component set 2
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # Search button click function for target search in the Exo-Planet Detection screen
+    #---------------------------------------------------------------------------    
     def search_clicked(self):
         pass
+    #---------------------------------------------------------------------------
     
-    def cmp_2_visibility(self,bool):
-        self.search_label.setHidden(bool)
-        self.target_label.setHidden(bool)
-        self.validation_label.setHidden(bool)
-        self.target_search_btn.setHidden(bool)
-        self.search_progressBar.setHidden(bool)
-        self.mission_comboBox.setHidden(bool)
-        self.target_search_input.setHidden(bool)
+    # Component set 2 visibility function
+    #---------------------------------------------------------------------------
+    def cmp_3_visibility(self,bool):
+        self.pfp_label.setHidden(bool)
+        self.welcome_label.setHidden(bool)
+    #---------------------------------------------------------------------------
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Application start
 # -------------------------------------------------------------------------- 
