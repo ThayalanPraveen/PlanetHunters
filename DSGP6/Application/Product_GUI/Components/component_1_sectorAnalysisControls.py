@@ -66,6 +66,12 @@ class Component(QWidget):
         self.lightcurve_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
+        # Normalize checkbox 
+        # --------------------------------------------------------------------------
+        self.normalize_check = QCheckBox("Normalize", self)
+        self.normalize_check.setGeometry(10+ cmp_1_x_offset, 40+ cmp_1_y_offset, 130, 20)
+        # --------------------------------------------------------------------------
+
         # Button for Light Curve Plot in BLS Analysis in Exo-Detection Screen
         # --------------------------------------------------------------------------
         self.lightcurve_plot_btn = QPushButton("Light Curve Plot",self)
@@ -82,14 +88,52 @@ class Component(QWidget):
                                 """)
         #self.lightcurve_plot_btn.clicked.connect(self.bls_btn_clicked)
         # --------------------------------------------------------------------------
-
-        # Normalize checkbox 
-        # --------------------------------------------------------------------------
-        self.normalize_check = QCheckBox("Normalize", self)
-        self.normalize_check.setGeometry(10+ cmp_1_x_offset, 40+ cmp_1_y_offset, 130, 20)
         
+        # Label to show "Fold Light Curve" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------        
+        self.fold_label = QLabel("Fold Light Curve : BLS" , self)
+        self.fold_label.setGeometry(10 + cmp_1_x_offset, 100+ cmp_1_y_offset, 150, 20)
+        self.fold_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
+        # Period label
+        # --------------------------------------------------------------------------
+        self.period_label = QLabel("Period : 1 to " , self)
+        self.period_label.setGeometry(10+ cmp_1_x_offset, 130+ cmp_1_y_offset, 200, 20)
+        self.period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Input value for period in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.period_input = QLineEdit(self)
+        self.period_input.setFont(QFont(app_font,15))
+        self.period_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.period_input.setGeometry(90+ cmp_1_x_offset,130+ cmp_1_y_offset,50,20)
+        self.period_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
+
+        # Button for Folded Plot in Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.folded_plot_btn = QPushButton("Folded Plot",self)
+        self.folded_plot_btn.setGeometry(10+ cmp_1_x_offset, 160+ cmp_1_y_offset, 130, 20)
+        self.folded_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        #self.lightcurve_plot_btn.clicked.connect(self.bls_btn_clicked)
+        # --------------------------------------------------------------------------
 
         # Label to show "Plot Flattened Curve" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------        

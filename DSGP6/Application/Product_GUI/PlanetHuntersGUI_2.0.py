@@ -109,6 +109,23 @@ bls_duration = 0
 bls_fold_clicked = False
 # --------------------------------------------------------------------------
 
+# Used for flatten plot
+# --------------------------------------------------------------------------
+window_length = 101
+polyorder = 2
+niters = 3
+sigma = 3
+#--------------------------------------------------------------------------
+
+# Used for binned plot
+# --------------------------------------------------------------------------
+n_bins = None
+bins = None
+
+# Store current plot type
+# -------------------------------------------
+current_selected_plot = 0
+current_selected_plot_type = 0
 
 # Application font
 # --------------------------------------------------------------------------
@@ -321,82 +338,57 @@ class PlotArea(QScrollArea):
         global bls_period
         global bls_transit
         global bls_duration
-
-        lightcurve_plot_data = lightcurve
     
         self.sc.axes.cla()
 
         # Nested if to switch plot type and line type
         # --------------------------------------------------------------------------
 
-        if selector == 0:
-            if plot_type < 1 :
-                lightcurve_plot_data = lightcurve
+        if plot_type == 0 :
+            lightcurve_plot_data = lightcurve
+            if selector == 0:
                 lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 2:
-                lightcurve_plot_data = lightcurve_plot_data.flatten()
-                lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 3:
-                lightcurve_plot_data = lightcurve_plot_data.bin()
-                lightcurve_plot_data.plot(ax=self.sc.axes)
-            elif plot_type < 4:
-                period = np.linspace(1, fold_period, 10000)
-                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
-                bls.plot(ax=self.sc.axes)
-                bls_period = bls.period_at_max_power
-                bls_transit = bls.transit_time_at_max_power
-                bls_duration = bls.duration_at_max_power
+            elif selector == 1:
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
-                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+
+        elif plot_type == 1:
+            lightcurve_plot_data = lightcurve.normalize()
+            if selector == 0:
                 lightcurve_plot_data.plot(ax=self.sc.axes)
-                self.sc.axes.set_xlim(-5,5)
-
-        elif selector == 1:
-            if plot_type < 1 :
-                lightcurve_plot_data = lightcurve
+            elif selector == 1:
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 2:
-                lightcurve_plot_data = lightcurve_plot_data.flatten()
-                lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 3:
-                lightcurve_plot_data = lightcurve_plot_data.bin()
-                lightcurve_plot_data.scatter(ax=self.sc.axes)
-            elif plot_type < 4:
-                period = np.linspace(1, fold_period, 10000)
-                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
-                bls.plot(ax=self.sc.axes)
-                bls_period = bls.period_at_max_power
-                bls_transit = bls.transit_time_at_max_power
-                bls_duration = bls.duration_at_max_power
             else:
-                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+    
+        elif plot_type == 2:
+            lightcurve_plot_data = lightcurve.fold(period = fold_period)
+            if selector == 0:
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif selector == 1:
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
-                self.sc.axes.set_xlim(-5,5)
-
-        else:
-
-            if plot_type < 1 :
-                lightcurve_plot_data = lightcurve
-                lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 2:
-                lightcurve_plot_data = lightcurve_plot_data.flatten()
-                lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 3:
-                lightcurve_plot_data = lightcurve_plot_data.bin()
-                lightcurve_plot_data.errorbar(ax=self.sc.axes)
-            elif plot_type < 4:
-                period = np.linspace(1, fold_period, 10000)
-                bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
-                bls.plot(ax=self.sc.axes)
-                bls_period = bls.period_at_max_power
-                bls_transit = bls.transit_time_at_max_power
-                bls_duration = bls.duration_at_max_power
             else:
-                lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
-                self.sc.axes.set_xlim(-5,5)
-            
-            # --------------------------------------------------------------------------
+        
+        elif plot_type == 3:
+            lightcurve_plot_data = lightcurve.flatten(window_length = window_length,polyorder=polyorder,niters=niters,sigma=sigma)
+            if selector == 0:
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif selector == 1:
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            else:
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        
+        elif plot_type == 4:
+            lightcurve_plot_data = lightcurve.bin(bins = bins)
+            if selector == 0:
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif selector == 1:
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            else:
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+
         if len(lightcurve) > 0:
             self.sc.draw()
             
@@ -532,6 +524,12 @@ class ExoDetection(QWidget):
         self.lightcurve_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
+        # Normalize checkbox 
+        # --------------------------------------------------------------------------
+        self.normalize_check = QCheckBox("Normalize", self)
+        self.normalize_check.setGeometry(10+ cmp_1_x_offset, 40+ cmp_1_y_offset, 130, 20)
+        # --------------------------------------------------------------------------
+
         # Button for Light Curve Plot in BLS Analysis in Exo-Detection Screen
         # --------------------------------------------------------------------------
         self.lightcurve_plot_btn = QPushButton("Light Curve Plot",self)
@@ -546,16 +544,54 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-        #self.lightcurve_plot_btn.clicked.connect(self.bls_btn_clicked)
+        self.lightcurve_plot_btn.clicked.connect(self.lc_btn_clicked)
         # --------------------------------------------------------------------------
-
-        # Normalize checkbox 
-        # --------------------------------------------------------------------------
-        self.normalize_check = QCheckBox("Normalize", self)
-        self.normalize_check.setGeometry(10+ cmp_1_x_offset, 40+ cmp_1_y_offset, 130, 20)
         
+        # Label to show "Fold Light Curve" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------        
+        self.fold_label = QLabel("Fold Light Curve : BLS" , self)
+        self.fold_label.setGeometry(10 + cmp_1_x_offset, 100+ cmp_1_y_offset, 150, 20)
+        self.fold_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
+        # Period label
+        # --------------------------------------------------------------------------
+        self.period_label = QLabel("Period (days) : " , self)
+        self.period_label.setGeometry(10+ cmp_1_x_offset, 130+ cmp_1_y_offset, 200, 20)
+        self.period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Input value for period in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.period_input = QLineEdit(self)
+        self.period_input.setFont(QFont(app_font,15))
+        self.period_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.period_input.setGeometry(100+ cmp_1_x_offset,130+ cmp_1_y_offset,50,20)
+        self.period_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
+
+        # Button for Folded Plot in Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.folded_plot_btn = QPushButton("Folded Plot",self)
+        self.folded_plot_btn.setGeometry(10+ cmp_1_x_offset, 160+ cmp_1_y_offset, 130, 20)
+        self.folded_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.folded_plot_btn.clicked.connect(self.fold_btn_clicked)
+        # --------------------------------------------------------------------------
 
         # Label to show "Plot Flattened Curve" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------        
@@ -666,7 +702,7 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-        #self.flattened_plot_btn.clicked.connect(self.bls_btn_clicked)
+        self.flattened_plot_btn.clicked.connect(self.flat_btn_clicked)
         # --------------------------------------------------------------------------
 
         # Label to show "Plot Folded Curve" for plots in Exo-Detection Screen
@@ -676,37 +712,12 @@ class ExoDetection(QWidget):
         self.folded_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
-        # N Bins label
-        # --------------------------------------------------------------------------        
-        self.n_bins_label = QLabel("N Bins : " , self)
-        self.n_bins_label.setGeometry(350+ cmp_1_x_offset, 40+ cmp_1_y_offset, 200, 20)
-        self.n_bins_label.setStyleSheet("color:#" + button_hover_hex + ";")
-        # --------------------------------------------------------------------------
-
-        # Input value for n bins in the Exo-Planet Detection screen
-        # --------------------------------------------------------------------------
-        self.n_bins_input = QLineEdit(self)
-        self.n_bins_input.setFont(QFont(app_font,15))
-        self.n_bins_input.setStyleSheet("""
-                                QLineEdit {
-                                    border-radius:10px;
-                                    background-color: #ffffff;
-                                    color: #000000;
-                                    }
-                                """)
-        self.n_bins_input.setGeometry(455+ cmp_1_x_offset,40+ cmp_1_y_offset,50,20)
-        self.n_bins_input.setAlignment(Qt.AlignCenter)
-        # --------------------------------------------------------------------------
-
         # Bins label
         # --------------------------------------------------------------------------
-
         self.bins_label = QLabel("Bins : " , self)
-        self.bins_label.setGeometry(350+ cmp_1_x_offset, 70+ cmp_1_y_offset, 200, 20)
+        self.bins_label.setGeometry(350+ cmp_1_x_offset, 40+ cmp_1_y_offset, 200, 20)
         self.bins_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
-
-
 
         # Input value for bins in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
@@ -719,12 +730,12 @@ class ExoDetection(QWidget):
                                     color: #000000;
                                     }
                                 """)
-        self.bins_input.setGeometry(455+ cmp_1_x_offset,70+ cmp_1_y_offset,50,20)
+        self.bins_input.setGeometry(455+ cmp_1_x_offset,40+ cmp_1_y_offset,50,20)
         self.bins_input.setAlignment(Qt.AlignCenter)
         # --------------------------------------------------------------------------
         # --------------------------------------------------------------------------
         self.binned_plot_btn = QPushButton("Binned Plot",self)
-        self.binned_plot_btn.setGeometry(350+ cmp_1_x_offset, 100 + cmp_1_y_offset, 130, 20)
+        self.binned_plot_btn.setGeometry(350+ cmp_1_x_offset, 70 + cmp_1_y_offset, 130, 20)
         self.binned_plot_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -735,27 +746,67 @@ class ExoDetection(QWidget):
                                     color: #000000
                                     }
                                 """)
-      
+        self.binned_plot_btn.clicked.connect(self.bin_btn_clicked)
+
+    def lc_btn_clicked(self):
+        global current_selected_plot
+        if self.normalize_check.isChecked() == True:
+            current_selected_plot = 1
+            self.target_plot.update_plot(current_selected_plot_type,1)
+        else:
+            current_selected_plot = 0
+            self.target_plot.update_plot(current_selected_plot_type,0)
+
+    def fold_btn_clicked(self):
+        global current_selected_plot
+        global fold_period
+        current_selected_plot = 2
+        fold_period = float(self.period_input.text())
+        self.target_plot.update_plot(current_selected_plot_type,2)
+
+
+    def flat_btn_clicked(self):
+        global window_length
+        global polyorder
+        global niters
+        global sigma
+        global current_selected_plot
+        current_selected_plot = 3
+        window_length = int(float(self.window_length_input.text()))
+        polyorder = int(float(self.poly_order_input.text()))
+        niters = int(float(self.niters_input.text()))
+        sigma = int(float(self.sigma_input.text()))
+        self.target_plot.update_plot(current_selected_plot_type,3)
+
+    def bin_btn_clicked(self):
+        global bins
+        global n_bins
+        global current_selected_plot
+        current_selected_plot = 4
+        bins = int(float(self.bins_input.text()))
+        self.target_plot.update_plot(current_selected_plot_type,4)
+    
     # Component set 1 visibility function
     def cmp_1_visibility(self,bool):
         self.bins_label.setHidden(bool)
         self.sigma_label.setHidden(bool)
         self.folded_label.setHidden(bool)
-        self.n_bins_label.setHidden(bool)
         self.niters_label.setHidden(bool)
         self.flattened_label.setHidden(bool)
         self.poly_order_label.setHidden(bool)
         self.lightcurve_label.setHidden(bool)
         self.window_length_label.setHidden(bool)
+        self.period_label.setHidden(bool)
+        self.fold_label.setHidden(bool)
         self.binned_plot_btn.setHidden(bool)
         self.flattened_plot_btn.setHidden(bool)
         self.lightcurve_plot_btn.setHidden(bool)
+        self.folded_plot_btn.setHidden(bool)
+        self.period_input.setHidden(bool)
         self.bins_input.setHidden(bool)
-        self.n_bins_input.setHidden(bool)
         self.normalize_check.setHidden(bool)
         self.bins_input.setHidden(bool)
         self.sigma_input.setHidden(bool)
-        self.n_bins_input.setHidden(bool)
         self.niters_input.setHidden(bool)
         self.poly_order_input.setHidden(bool)
         self.window_length_input.setHidden(bool)
@@ -1031,33 +1082,16 @@ class ExoDetection(QWidget):
       
     # Switch plot according to selected radio button  
     def switch_plot_radio_clicked(self):
-        
-        if bls_fold_clicked == True :
-            if self.line_btn.isChecked() == True:
-                self.target_plot.update_plot(0,4)
-            elif self.scatter_btn.isChecked() == True:
-                self.target_plot.update_plot(1,4)
-            else:
-                self.target_plot.update_plot(2,4)
-        
+        global current_selected_plot_type
+        if self.line_radioBtn.isChecked() == True:
+            self.target_plot.update_plot(0,current_selected_plot)
+            current_selected_plot_type = 0
+        elif self.scatter_radioBtn.isChecked() == True:
+            self.target_plot.update_plot(1,current_selected_plot)
+            current_selected_plot_type = 1
         else:
-            self.bls_fold_plot_btn.setStyleSheet("""
-                                    QPushButton {
-                                        border-radius:10px;
-                                        background-color: #""" + button_color_hex + """;
-                                        }
-                                    QPushButton:hover {
-                                        background-color: #""" + button_hover_hex + """;
-                                        color: #000000
-                                        }
-                                    """)
-
-            if self.line_btn.isChecked() == True:
-                self.target_plot.update_plot(0,self.plot_type_select.currentIndex())
-            elif self.scatter_btn.isChecked() == True:
-                self.target_plot.update_plot(1,self.plot_type_select.currentIndex())
-            else:
-                self.target_plot.update_plot(2,self.plot_type_select.currentIndex())
+            self.target_plot.update_plot(2,current_selected_plot)
+            current_selected_plot_type = 2
 
     # Component 4 visibility
     def cmp_4_visibility(self,bool):
