@@ -26,9 +26,12 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
+basedir = os.path.dirname(__file__)
+error = ""
+
 # Credentitials for firebase authentication
 # --------------------------------------------------------------------------
-cred = credentials.Certificate(os.path.join(sys.path[0],'planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
+cred = credentials.Certificate(os.path.join(basedir,'Extra/planet-hunters-1b294-firebase-adminsdk-ksboi-00cff64782.json'))
 # --------------------------------------------------------------------------
 
 # Initialize firebase database with cred file
@@ -184,6 +187,7 @@ class Worker(QObject):
     # Light curve download multi-threading process
     # --------------------------------------------------------------------------
     def download_lightcurve(self):
+        global error
         global lightcurve
         global lightcurve_collection
         global select_input
@@ -200,14 +204,16 @@ class Worker(QObject):
 
             search_result_select_isDownloaded_error = False
             self.finished.emit()
-        except:
+        except BaseException as e:
             search_result_select_isDownloaded_error = True
+            error = str(e)
             self.finished.emit()
     # --------------------------------------------------------------------------
 
     # Light curve search download multi-threading process
     # --------------------------------------------------------------------------
     def dowload_search_results(self):
+        global error
         global target_search_result
         global target_search_result_copy
         global search_result_isDownloaded_error
@@ -216,7 +222,8 @@ class Worker(QObject):
             target_search_result_copy = target_search_result
             search_result_isDownloaded_error = False
             self.finished.emit()
-        except:
+        except BaseException as e:
+            error = str(e)
             search_result_isDownloaded_error = True
             self.finished.emit()
     # --------------------------------------------------------------------------
@@ -278,7 +285,7 @@ class Worker(QObject):
             # --------------------------------------------------------------------------
             if authenticate['status'] == 'success' :
                 sign_up = True
-                mail_id = signup_email_id
+                mail_id = signup_email_id.lower()
                 mail_id = mail_id.replace("@","")
                 mail_id = mail_id.replace(".","")
                 ref = db.reference('/users')
@@ -617,7 +624,7 @@ class ExoDetection(QWidget):
 
         # Label for Tranist Time : Requires BLS" for BLS Results in Exo-Detection Screen
         # --------------------------------------------------------------------------
-        self.bls_results_transit_label = QLabel("Tranist Time : Requires BLS" , self)
+        self.bls_results_transit_label = QLabel("Transit Time : Requires BLS" , self)
         self.bls_results_transit_label.setGeometry(900, 565, 150, 20)
         self.bls_results_transit_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
@@ -703,11 +710,11 @@ class ExoDetection(QWidget):
         pfp_url = self.create_url()
 
         try:
-            if pfp_load == False:
-                request = requests.get(pfp_url)
-                avatar = request.content
-                network_status = True
-                pfp_load = True
+            #if pfp_load == False:
+            request = requests.get(pfp_url)
+            avatar = request.content
+            network_status = True
+            #pfp_load = True
         except:
             pass
 
@@ -824,7 +831,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.target_search_btn = QPushButton(self)
         self.target_search_btn.setFont(QFont(app_font,15))
-        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
+        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/search.png')))
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -843,7 +850,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
         self.add_advanced_search_btn.setFont(QFont(app_font,15))
-        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
+        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -863,7 +870,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
         self.undo_advanced_search_btn.setFont(QFont(app_font,15))
-        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
+        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -883,7 +890,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
         self.clear_advanced_search_btn.setFont(QFont(app_font,15))
-        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
+        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1006,7 +1013,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
         self.select_btn.setFont(QFont(app_font,15))
-        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
+        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/select.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1027,7 +1034,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
         self.back_btn.setFont(QFont(app_font,15))
-        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
+        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1046,7 +1053,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
         self.lgout_btn.setFont(QFont(app_font,15))
-        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
+        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1147,16 +1154,11 @@ class ExoDetection(QWidget):
                     local_lc.append(lc_local.flux[x])
                 except:
                     break
-            '''
-            global_model = joblib.load(os.path.join(sys.path[0],'RFG_757'))
-            local_model = joblib.load(os.path.join(sys.path[0],'RFL_764'))
-            '''
-
             
-            with open(os.path.join(sys.path[0],'RFM_G_model_pkl') , 'rb') as f:
+            with open(os.path.join(basedir,'Extra/RFM_G_model_pkl') , 'rb') as f:
                 global_model = pickle.load(f)
 
-            with open(os.path.join(sys.path[0],'RFM_L_model_pkl') , 'rb') as f:
+            with open(os.path.join(basedir,'Extra/RFM_L_model_pkl') , 'rb') as f:
                 local_model = pickle.load(f)
 
             #-----------------------------------------
@@ -1428,6 +1430,12 @@ class ExoDetection(QWidget):
         global target_search_id
         global target_search_result
         global search_result_isDownloaded_error
+        global lightcurve
+        global lightcurve_collection
+        global error
+        global select_input
+        global search_result_select_isDownloaded_error
+
 
         self.validation_label.setText("Searching..")
         self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
@@ -1458,7 +1466,8 @@ class ExoDetection(QWidget):
             # Step 6: Start the thread
             self.thread.start()
             self.thread.finished.connect(self.update_search_results)
-
+            
+            
     # Display search results after search complete in Exo-Planet detection screen
     # --------------------------------------------------------------------------
     def update_search_results(self):
@@ -1476,7 +1485,7 @@ class ExoDetection(QWidget):
         else:
             self.target_search_result_scrollable_label.setHidden(True)
             self.setFixedHeight(170)
-            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setText("!! A working internet connection is required")
             self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
@@ -1513,6 +1522,12 @@ class ExoDetection(QWidget):
     def select_clicked(self):
         global lightcurve
         global select_input
+        global error
+        global lightcurve
+        global lightcurve_collection
+        global target_search_result
+        global search_result_select_isDownloaded_error
+
         select_valid = True
         self.validation_label.setStyleSheet("color: #" + button_hover_hex + ";")
      
@@ -1587,6 +1602,7 @@ class ExoDetection(QWidget):
             self.progress_bar_exo_detection.setHidden(False)
             self.validation_label.setGeometry(160,387,300,30)
             self.validation_label.setText("Downloading Lightcurve")
+            
 
     # --------------------------------------------------------------------------
         
@@ -1691,11 +1707,11 @@ class Habitability(QWidget):
         pfp_url = self.create_url()
 
         try:
-            if pfp_load == False:
-                request = requests.get(pfp_url)
-                avatar = request.content
-                network_status = True
-                pfp_load = True
+            #if pfp_load == False:
+            request = requests.get(pfp_url)
+            avatar = request.content
+            network_status = True
+            #pfp_load = True
         except:
             pass
 
@@ -1814,7 +1830,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.target_search_btn = QPushButton(self)
         self.target_search_btn.setFont(QFont(app_font,15))
-        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/search.png')))
+        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/search.png')))
         self.target_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1833,7 +1849,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.add_advanced_search_btn = QPushButton(self)
         self.add_advanced_search_btn.setFont(QFont(app_font,15))
-        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/add.png')))
+        self.add_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/add.png')))
         self.add_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1853,7 +1869,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.undo_advanced_search_btn = QPushButton(self)
         self.undo_advanced_search_btn.setFont(QFont(app_font,15))
-        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/undo.png')))
+        self.undo_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/undo.png')))
         self.undo_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1873,7 +1889,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.clear_advanced_search_btn = QPushButton(self)
         self.clear_advanced_search_btn.setFont(QFont(app_font,15))
-        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/clear.png')))
+        self.clear_advanced_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/clear.png')))
         self.clear_advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1996,7 +2012,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.select_btn = QPushButton(self)
         self.select_btn.setFont(QFont(app_font,15))
-        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/select.png')))
+        self.select_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/select.png')))
         self.select_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -2017,7 +2033,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.back_btn = QPushButton(self)
         self.back_btn.setFont(QFont(app_font,15))
-        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/back.png')))
+        self.back_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/back.png')))
         self.back_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -2036,7 +2052,7 @@ class Habitability(QWidget):
         # --------------------------------------------------------------------------
         self.lgout_btn = QPushButton(self)
         self.lgout_btn.setFont(QFont(app_font,15))
-        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
+        self.lgout_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/logout.png')))
         self.lgout_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -2191,7 +2207,7 @@ class Habitability(QWidget):
         self.y_max_input.setAlignment(Qt.AlignCenter)
 
         self.y_btn = QPushButton(self)
-        self.y_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/refresh.png')))
+        self.y_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/refresh.png')))
         self.y_btn.setFont(QFont(app_font,15))
         self.y_btn.setStyleSheet("""
                                 QPushButton {
@@ -2245,7 +2261,7 @@ class Habitability(QWidget):
         self.x_max_input.setAlignment(Qt.AlignCenter)
 
         self.x_btn = QPushButton(self)
-        self.x_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/refresh.png')))
+        self.x_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/refresh.png')))
         self.x_btn.setFont(QFont(app_font,15))
         self.x_btn.setStyleSheet("""
                                 QPushButton {
@@ -2819,7 +2835,8 @@ class Habitability(QWidget):
         else:
             self.target_search_result_scrollable_label.setHidden(True)
             self.setFixedHeight(170)
-            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setText(error)
+            self.target_search_input.setText(error)
             self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
@@ -2949,7 +2966,8 @@ class Habitability(QWidget):
            
         else:
             self.validation_label.setGeometry(10,140,300,30)
-            self.validation_label.setText("!! A working network connection is required !!")
+            self.validation_label.setText(error)
+            self.target_search_input.setText(error)
             self.validation_label.setStyleSheet("color:#" + logout_color_hex + ";")
 
         self.target_search_btn.setEnabled(True)
@@ -3004,7 +3022,7 @@ class Signup(QWidget):
         # Signup logo in signup screen
         # --------------------------------------------------------------------------
         logo = QLabel("",self)
-        logo_pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo_small.png"))
+        logo_pixmap = QPixmap(os.path.join(basedir,"Images/logo_small.png"))
         logo.setPixmap(logo_pixmap)
         logo.setGeometry((width/2)-30,40,50,50)
         # --------------------------------------------------------------------------
@@ -3261,11 +3279,11 @@ class Select(QWidget):
         pfp_url = self.create_url()
 
         try:
-            if pfp_load == False:
-                request = requests.get(pfp_url)
-                avatar = request.content
-                network_status = True
-                pfp_load = True
+            #if pfp_load == False:
+            request = requests.get(pfp_url)
+            avatar = request.content
+            network_status = True
+            #pfp_load = True
         except:
             pass
 
@@ -3352,7 +3370,7 @@ class Select(QWidget):
         # Logout button in select screen
         # --------------------------------------------------------------------------
         self.logout = QPushButton(self)
-        self.logout.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/logout.png')))
+        self.logout.setIcon(PySide6.QtGui.QIcon(os.path.join(basedir,'Images/logout.png')))
         self.logout.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -3411,7 +3429,7 @@ class Login(QWidget):
         width = 400
         height = 450
 
-        self.setWindowIcon(QIcon(os.path.join(sys.path[0],"Images/icon.png")))
+        self.setWindowIcon(QIcon(os.path.join(basedir,"Images/icon.png")))
         self.setWindowTitle("Log In - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
@@ -3422,8 +3440,8 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
 
         try:
-            path_loader_request = str(os.path.join(sys.path[0],'loader_request.joblib'))
-            path_loader = str(os.path.join(sys.path[0],'loader.joblib'))
+            path_loader_request = str(os.path.join(basedir,'Extra/loader_request.joblib'))
+            path_loader = str(os.path.join(basedir,'Extra/loader.joblib'))
             info = joblib.load(path_loader_request)
 
             if len(info) > 1 :
@@ -3443,7 +3461,7 @@ class Login(QWidget):
         self.email_input.setText("")
         self.pass_input.setText("")
         self.checkbox.setText("Remember me")
-        joblib.dump([],os.path.join(sys.path[0],'loader_request.joblib'))
+        joblib.dump([],os.path.join(basedir,'Extra/loader_request.joblib'))
      # --------------------------------------------------------------------------
 
     # Creating the widgets for the login screen
@@ -3454,7 +3472,7 @@ class Login(QWidget):
         # Login logo in login screen
         # --------------------------------------------------------------------------
         logo = QLabel("",self)
-        logo_pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo_small.png"))
+        logo_pixmap = QPixmap(os.path.join(basedir,"Images/logo_small.png"))
         logo.setPixmap(logo_pixmap)
         logo.setGeometry((width/2)-30,50,50,50)
         # --------------------------------------------------------------------------
@@ -3605,8 +3623,8 @@ class Login(QWidget):
         "password": self.pass_input.text(),
         "returnSecureToken": True
         })
-        username = self.email_input.text()
-        db_username = self.email_input.text()
+        username = self.email_input.text().lower()
+        db_username = self.email_input.text().lower()
         db_username = db_username.replace("@","")
         db_username = db_username.replace(".","")
 
@@ -3664,11 +3682,11 @@ class Login(QWidget):
                     lines = [self.email_input.text(),self.pass_input.text()]
                     for x in range(0,2):
                         message = lines[x]
-                        fernet = joblib.load(os.path.join(sys.path[0],'loader.joblib'))
+                        fernet = joblib.load(os.path.join(basedir,'Extra/loader.joblib'))
                         encMessage = fernet.encrypt(message.encode())
                         lines_w.append(encMessage)
                     
-                    joblib.dump(lines_w,os.path.join(sys.path[0],"loader_request.joblib"))
+                    joblib.dump(lines_w,os.path.join(basedir,"Extra/loader_request.joblib"))
                 
                 if self.window is None:
                     window.close()
@@ -3701,7 +3719,7 @@ class Admin(QWidget):
         width = 400
         height = 450
 
-        self.setWindowIcon(QIcon(os.path.join(sys.path[0],"Images/icon.png")))
+        self.setWindowIcon(QIcon(os.path.join(basedir,"Images/icon.png")))
         self.setWindowTitle("Log In - Planet Hunters")
         self.setFixedHeight(height)
         self.setFixedWidth(width)
@@ -3718,8 +3736,8 @@ class Admin(QWidget):
         "password": password,
         "returnSecureToken": True
         })
-        username = email
-        db_username = email
+        username = email.lower()
+        db_username = email.lower()
         db_username = db_username.replace("@","")
         db_username = db_username.replace(".","")
 
@@ -3750,21 +3768,17 @@ class Admin(QWidget):
 
 # Application start
 # -------------------------------------------------------------------------- 
-debug = False
-debug_window = ExoDetection
-app = QApplication([])
-app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QComboBox {color: white;} ") # Setting all labels in the app to white color
-app.setWindowIcon(QIcon(os.path.join(sys.path[0],"Images/icon.png")))
-pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
-splash = QSplashScreen(pixmap)
-splash.show()
-if debug == True:
-    window = Admin(debug_window)
-else:
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QComboBox {color: white;} ") # Setting all labels in the app to white color
+    app.setWindowIcon(QIcon(os.path.join(basedir,"Images/icon.png")))
+    pixmap = QPixmap(os.path.join(basedir,"Images/logo.png"))
+    splash = QSplashScreen(pixmap)
+    splash.show()
     window = Login()
-window.show()
-splash.finish(window)
-sys.exit(app.exec())
+    window.show()
+    splash.finish(window)
+    sys.exit(app.exec())
 # -------------------------------------------------------------------------- 
 
 
