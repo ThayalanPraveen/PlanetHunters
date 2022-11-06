@@ -344,6 +344,8 @@ class PlotArea(QScrollArea):
         # Nested if to switch plot type and line type
         # --------------------------------------------------------------------------
 
+        # Plot Light Curve
+        # --------------------------------------------------------------------------
         if plot_type == 0 :
             lightcurve_plot_data = lightcurve
             if selector == 0:
@@ -352,7 +354,10 @@ class PlotArea(QScrollArea):
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
 
+        # Plot Normalized Light Curve
+        # --------------------------------------------------------------------------
         elif plot_type == 1:
             lightcurve_plot_data = lightcurve.normalize()
             if selector == 0:
@@ -361,7 +366,10 @@ class PlotArea(QScrollArea):
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
     
+        # Plot Folded Light Curve
+        # --------------------------------------------------------------------------
         elif plot_type == 2:
             lightcurve_plot_data = lightcurve.fold(period = fold_period)
             if selector == 0:
@@ -370,7 +378,10 @@ class PlotArea(QScrollArea):
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
         
+        # Plot Flattened Light Curve
+        # --------------------------------------------------------------------------
         elif plot_type == 3:
             lightcurve_plot_data = lightcurve.flatten(window_length = window_length,polyorder=polyorder,niters=niters,sigma=sigma)
             if selector == 0:
@@ -379,7 +390,10 @@ class PlotArea(QScrollArea):
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
         
+        # Plot Binned Light Curve
+        # --------------------------------------------------------------------------
         elif plot_type == 4:
             lightcurve_plot_data = lightcurve.bin(bins = bins)
             if selector == 0:
@@ -388,7 +402,42 @@ class PlotArea(QScrollArea):
                 lightcurve_plot_data.scatter(ax=self.sc.axes)
             else:
                 lightcurve_plot_data.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
+        
+        # Plot BLS
+        # --------------------------------------------------------------------------
+        elif plot_type == 5:
+            lightcurve_plot_data = lightcurve
+            period = np.linspace(1, fold_period, 10000)
+            bls = lightcurve_plot_data.to_periodogram(method='bls', period=period, frequency_factor=fold_freq)
+            bls_period = bls.period_at_max_power
+            bls_transit = bls.transit_time_at_max_power
+            bls_duration = bls.duration_at_max_power
 
+            if selector == 0:
+                bls.plot(ax=self.sc.axes)
+            elif selector == 1:
+                bls.scatter(ax=self.sc.axes)
+            else:
+                bls.errorbar(ax=self.sc.axes)
+        # --------------------------------------------------------------------------
+        
+        # Plot Folded Light Curve
+        # --------------------------------------------------------------------------
+        elif plot_type ==6:
+            lightcurve_plot_data = lightcurve
+            lightcurve_plot_data = lightcurve_plot_data.fold(period=bls_period, epoch_time=bls_transit)
+            if selector == 0:
+                lightcurve_plot_data.plot(ax=self.sc.axes)
+            elif selector == 1:
+                lightcurve_plot_data.scatter(ax=self.sc.axes)
+            else:
+                lightcurve_plot_data.errorbar(ax=self.sc.axes)
+            self.sc.axes.set_xlim(-1,1)
+        # --------------------------------------------------------------------------
+
+        # Draw the plot on screen
+        # --------------------------------------------------------------------------
         if len(lightcurve) > 0:
             self.sc.draw()
             
@@ -499,6 +548,12 @@ class ExoDetection(QWidget):
 
         # Component set 11
         self.cmp_11_create(400,0)
+
+        # Components set 12
+        self.cmp_12_create(-160,0)
+        self.cmp_12_visibility(True)
+
+
 
         try:
             self.target_search_input.setText(target_search_id)
@@ -1409,12 +1464,13 @@ class ExoDetection(QWidget):
     def sector_clicked(self):
         self.cmp_1_visibility(False)
         self.cmp_4_visibility(False)
+        self.cmp_12_visibility(True)
 
     # Detection button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def detection_clicked(self):
         self.cmp_1_visibility(True)
-        self.cmp_4_visibility(True)
+        self.cmp_12_visibility(False)
    
     def cmp_7_visibility(self,bool):
         self.sector_btn.setHidden(bool)
@@ -1633,6 +1689,183 @@ class ExoDetection(QWidget):
         self.lgout_btn.setHidden(bool)
     #-------------------------------------------------------------------------------
 
+    # Component 12
+    def cmp_12_create(self,cmp_12_x_offset,cmp_12_y_offset):
+        
+        # Label to show "BLS Analysis" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_label = QLabel("BLS Analysis" , self)
+        self.bls_label.setGeometry(920+ cmp_12_x_offset, 500+ cmp_12_y_offset, 150, 20)
+        self.bls_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Period" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_period_label = QLabel("Period :" , self)
+        self.bls_period_label.setGeometry(920+ cmp_12_x_offset, 535+ cmp_12_y_offset, 150, 20)
+        self.bls_period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Inout for "Period" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_period_input = QLineEdit(self)
+        self.bls_period_input.setGeometry(970+ cmp_12_x_offset, 535+ cmp_12_y_offset, 50, 20)
+        self.bls_period_input.setText("20")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Frequency Factor :" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_freq_label = QLabel("Frequency Factor :" , self)
+        self.bls_freq_label.setGeometry(920+ cmp_12_x_offset, 565+ cmp_12_y_offset, 150, 20)
+        self.bls_freq_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Inout for "Frequency Factor" for BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_freq_input = QLineEdit(self)
+        self.bls_freq_input.setGeometry(1035+ cmp_12_x_offset, 565+ cmp_12_y_offset, 30, 20)
+        self.bls_freq_input.setText("500")
+        # --------------------------------------------------------------------------
+
+        # Button for BLS Plot in BLS Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_plot_btn = QPushButton("BLS Plot",self)
+        self.bls_plot_btn.setGeometry(920+ cmp_12_x_offset, 595+ cmp_12_y_offset, 150, 20)
+        self.bls_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bls_plot_btn.clicked.connect(self.bls_btn_clicked)
+        # --------------------------------------------------------------------------
+        
+        # Label for "BLS Planet Results" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_label = QLabel("BLS Planet Results" , self)
+        self.bls_label.setGeometry(1080+ cmp_12_x_offset, 500+ cmp_12_y_offset, 150, 20)
+        self.bls_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label for "Period : Requires BLS" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_results_period_label = QLabel("Period : Requires BLS" , self)
+        self.bls_results_period_label.setGeometry(1080+ cmp_12_x_offset, 535+ cmp_12_y_offset, 200, 20)
+        self.bls_results_period_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label for Tranist Time : Requires BLS" for BLS Results in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bls_results_transit_label = QLabel("Tranist Time : Requires BLS" , self)
+        self.bls_results_transit_label.setGeometry(1080+ cmp_12_x_offset, 565+ cmp_12_y_offset, 200, 20)
+        self.bls_results_transit_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+        
+        # Label for "Duration : Requires BLS" for BLS Results in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.bls_results_duration_label = QLabel("Duration : Requires BLS" , self)
+        self.bls_results_duration_label.setGeometry(1080+ cmp_12_x_offset, 595+ cmp_12_y_offset, 200, 20)
+        self.bls_results_duration_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Button for phase folded graph from BLS Results in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.bls_fold_plot_btn = QPushButton("BLS Phase Fold",self)
+        self.bls_fold_plot_btn.setGeometry(920+ cmp_12_x_offset, 635+ cmp_12_y_offset, 150, 20)
+        self.bls_fold_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bls_fold_plot_btn.clicked.connect(self.bls_fold_plot_btn_clicked)
+        self.bls_fold_plot_btn.setEnabled(False)
+        # --------------------------------------------------------------------------
+    
+    def cmp_12_visibility(self,bool):
+        self.bls_label.setHidden(bool)
+        self.bls_period_label.setHidden(bool)
+        self.bls_fold_plot_btn.setHidden(bool)
+        self.bls_freq_input.setHidden(bool)
+        self.bls_freq_label.setHidden(bool)
+        self.bls_period_input.setHidden(bool)
+        self.bls_plot_btn.setHidden(bool)
+        self.bls_results_duration_label.setHidden(bool)
+        self.bls_results_period_label.setHidden(bool)
+        self.bls_results_transit_label.setHidden(bool)
+
+     # Produce BLS analysis results on button click
+    # --------------------------------------------------------------------------
+    def bls_btn_clicked(self):
+        global bls_fold_clicked
+        global fold_period
+        global fold_freq
+        global current_selected_plot
+
+        try:
+            fold_period = float(self.bls_period_input.text())
+            fold_freq = float(self.bls_freq_input.text())
+
+            if self.line_radioBtn.isChecked() == True:
+                self.target_plot.update_plot(0,5)
+            elif self.scatter_radioBtn.isChecked() == True:
+                self.target_plot.update_plot(1,5)
+            else:
+                self.target_plot.update_plot(2,5)
+
+            self.bls_results_period_label.setText("Period : " + str(bls_period))
+            self.bls_results_transit_label.setText("Transit Time : " + str(bls_transit))
+            self.bls_results_duration_label.setText("duration : " + str(bls_duration))
+
+            current_selected_plot = 5
+
+            if bls_period > 0 :
+                self.bls_fold_plot_btn.setEnabled(True)
+                bls_fold_clicked = False
+
+
+        except:
+            print("wrong data types or invalid inputs")
+        
+    # --------------------------------------------------------------------------
+
+    # Show BLS Phase fold plot on button click
+    # --------------------------------------------------------------------------
+    def bls_fold_plot_btn_clicked(self):
+        global bls_fold_clicked
+        global current_selected_plot
+
+        self.bls_fold_plot_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+
+        if self.line_radioBtn.isChecked() == True:
+            self.target_plot.update_plot(0,6)
+        elif self.scatter_radioBtn.isChecked() == True:
+            self.target_plot.update_plot(1,6)
+        else:
+            self.target_plot.update_plot(2,6)
+        
+        current_selected_plot = 6
+        
+        bls_fold_clicked = True
+    # --------------------------------------------------------------------------
+    
     # Update parameters display when new parameters are added to the filter in the advanced search in Exo-Detection Screen
     # --------------------------------------------------------------------------    
     def update_parameters_display(self):
