@@ -1,3 +1,4 @@
+import pickle
 import time
 import PySide6
 from astropy import units as u
@@ -59,6 +60,11 @@ sign_up = False
 signup_email_id = None
 signup_error_msg = ""
 signup_success = False
+# --------------------------------------------------------------------------
+
+# Store if user is a pro user or not
+# --------------------------------------------------------------------------
+pro = None
 # --------------------------------------------------------------------------
 
 # Used to store the load and store account profile picture 
@@ -251,7 +257,7 @@ class Worker(QObject):
     def login(self):
         global payload
         global r
-        global login_success
+        global pro
         global login_network_fail
 
         login_network_fail = False
@@ -259,6 +265,13 @@ class Worker(QObject):
             r = requests.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
                                 params={"key": apikey},
                                 data=payload)
+            try:
+                ref = db.reference('/users')
+                users_ref = ref.child(db_username)
+                user_data = users_ref.get()
+                pro = user_data['Pro']
+            except:
+                pass
             login_network_fail = True
             self.finished.emit()
         except:
@@ -1828,6 +1841,28 @@ class ExoDetection(QWidget):
         self.bls_fold_plot_btn.clicked.connect(self.bls_fold_plot_btn_clicked)
         self.bls_fold_plot_btn.setEnabled(False)
         # --------------------------------------------------------------------------
+
+        # Button for ML Prediction in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.ml_btn = QPushButton("Predict with ML",self)
+        self.ml_btn.setGeometry(1250+cmp_12_x_offset, 500+cmp_12_y_offset, 150, 20)
+        self.ml_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.ml_btn.setEnabled(False)
+        self.ml_btn.clicked.connect(self.ml_predict)
+
+        self.ml_label = QLabel(self)
+        self.ml_label.setGeometry(1230+cmp_12_x_offset, 530+cmp_12_y_offset, 300, 50)
+        self.ml_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
     
     def cmp_12_visibility(self,bool):
         self.bls_label.setHidden(bool)
@@ -1840,6 +1875,8 @@ class ExoDetection(QWidget):
         self.bls_results_duration_label.setHidden(bool)
         self.bls_results_period_label.setHidden(bool)
         self.bls_results_transit_label.setHidden(bool)
+        self.ml_btn.setHidden(bool)
+        self.ml_label.setHidden(bool)
 
      # Produce BLS analysis results on button click
     # --------------------------------------------------------------------------
@@ -1860,14 +1897,15 @@ class ExoDetection(QWidget):
             else:
                 self.target_plot.update_plot(2,5)
 
-            self.bls_results_period_label.setText("Period : " + str(bls_period))
-            self.bls_results_transit_label.setText("Transit Time : " + str(bls_transit))
-            self.bls_results_duration_label.setText("duration : " + str(bls_duration))
+            self.bls_results_period_label.setText("Period : " + str(round(bls_period.value,4)))
+            self.bls_results_transit_label.setText("Transit Time : " + str(round(bls_transit.value,4)))
+            self.bls_results_duration_label.setText("duration : " + str(round(bls_duration.value,4)))
 
             current_selected_plot = 5
 
             if bls_period > 0 :
                 self.bls_fold_plot_btn.setEnabled(True)
+                self.ml_btn.setEnabled(True)
                 bls_fold_clicked = False
 
 
@@ -1984,6 +2022,90 @@ class ExoDetection(QWidget):
         self.advanced_search_btn.setEnabled(True)
         self.select_btn.setEnabled(True) 
         self.adv_clicked()
+
+    # function to predict using ML models
+    # --------------------------------------------------------------------------
+    def ml_predict(self):
+        if pro == True:
+            data_period = bls_period.value
+            data_epoch = bls_transit.value
+            data_duration = bls_duration.value
+
+            lcs = lk.search_lightcurve(lightcurve.label,author=lightcurve.author,cadence='long').download_all()
+            lc = lcs.stitch()
+            lc_clean = lc.remove_outliers(sigma=20, sigma_upper=4)
+            temp_fold = lc_clean.fold(data_period, epoch_time=data_epoch)
+            fractional_duration = (data_duration / 24.0) / data_period
+            phase_mask = np.abs(temp_fold.phase.value) < (fractional_duration * 1.5)
+            transit_mask = np.in1d(lc_clean.time.value, temp_fold.time_original.value[phase_mask])
+            lc_flat, trend_lc = lc_clean.flatten(return_trend=True, mask=transit_mask)
+            lc_fold = lc_flat.fold(data_period, epoch_time=data_epoch)
+            lc_global = lc_fold.bin(time_bin_size=0.005).normalize() - 1
+            lc_global = (lc_global / np.abs(lc_global.flux.min()) ) * 2.0 + 1
+            lc_global.scatter()
+
+            phase_mask = (lc_fold.phase > -4*fractional_duration) & (lc_fold.phase < 4.0*fractional_duration)
+            lc_zoom = lc_fold[phase_mask]
+            lc_local = lc_zoom.bin(time_bin_size=0.0005).normalize() - 1
+            lc_local = (lc_local / np.abs(np.nanmin(lc_local.flux)) ) * 2.0 + 1
+
+            array_all = []
+
+            global_lc = []
+            local_lc = []
+
+            for x in range(0,len(lc_global.flux),10):
+                try:
+                    global_lc.append(lc_global.flux[x])
+                except:
+                    break
+
+            for x in range(0,len(lc_local.flux)):
+                try:
+                    local_lc.append(lc_local.flux[x])
+                except:
+                    break
+            
+            with open(os.path.join(sys.path[0],'Models/RFM_G_model_pkl') , 'rb') as f:
+                global_model = pickle.load(f)
+
+            with open(os.path.join(sys.path[0],'Models/RFM_L_model_pkl') , 'rb') as f:
+                local_model = pickle.load(f)
+
+            #-----------------------------------------
+
+            for i in range(len(global_lc),17134):
+                global_lc.append(-999)
+
+            df_global = pd.DataFrame(global_lc)
+            df_global = df_global.fillna(-999)
+
+            global_lc = []
+            for x in df_global[0] :
+                global_lc.append(x)
+
+            for i in range(len(local_lc),2773):
+                local_lc.append(-999)
+
+            df_local = pd.DataFrame(local_lc)
+            df_local = df_local.fillna(-999)
+
+            local_lc = []
+            for x in df_local[0] :
+                local_lc.append(x)
+
+        
+            g = global_model.predict([global_lc])
+            l = local_model.predict([local_lc])
+
+            if g[0] ==1 and l[0] ==1 :
+                self.ml_label.setText("Very likely to be an exoplanet!")
+            elif g[0]==1 or l[0]==1 :
+                self.ml_label.setText("Likely to be an exoplanet transit,\nRequires further analysis to confirm")
+            else :
+                self.ml_label.setText("Not likely to be an exoplanet")
+        else:
+            self.ml_label.setText("Must be a Pro User for \nML Prediction")
 
 # Class for sign up screen
 # --------------------------------------------------------------------------
@@ -3827,6 +3949,7 @@ class Login(QWidget):
     # --------------------------------------------------------------------------
     def login_click(self):
         global payload
+        global db_username
 
         self.progress_bar_login.setHidden(False)
         self.login_label.setHidden(False)
@@ -3838,6 +3961,12 @@ class Login(QWidget):
         "password": self.pass_input.text(),
         "returnSecureToken": True
         })
+
+        # Login validation with google api in login screen
+        # --------------------------------------------------------------------------
+        db_username = self.email_input.text().lower()
+        db_username = db_username.replace("@","")
+        db_username = db_username.replace(".","")
 
         # Multi threading the login request in login screen
         # --------------------------------------------------------------------------
