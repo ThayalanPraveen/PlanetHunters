@@ -155,10 +155,30 @@ class Component(QWidget):
                                 """)
         #self.bls_fold_plot_btn.clicked.connect(self.bls_fold_plot_btn_clicked)
         self.bls_fold_plot_btn.setEnabled(False)
+
+        # Button for ML Prediction in Exo-Detection Screen 
+        # --------------------------------------------------------------------------
+        self.ml_btn = QPushButton("Predict with ML",self)
+        self.ml_btn.setGeometry(1230, 500, 150, 20)
+        self.ml_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.ml_btn.setEnabled(False)
+        #self.ml_btn.clicked.connect(self.ml_predict)
+
+        self.ml_label = QLabel(self)
+        self.ml_label.setGeometry(1080, 530, 300, 50)
+        self.ml_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
         
     def cmp_12_visibility(self,bool):
-        self.plot_type_label.setHidden(bool)
         self.bls_label.setHidden(bool)
         self.bls_period_label.setHidden(bool)
         self.bls_fold_plot_btn.setHidden(bool)
@@ -169,8 +189,7 @@ class Component(QWidget):
         self.bls_results_duration_label.setHidden(bool)
         self.bls_results_period_label.setHidden(bool)
         self.bls_results_transit_label.setHidden(bool)
-        self.plot_type_label.setHidden(bool)
-        self.plot_type_select.setHidden(bool)
+        self.ml_btn.setHidden(bool)
 
   
 
