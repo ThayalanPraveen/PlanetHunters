@@ -92,18 +92,37 @@ class Component(QWidget):
 
         # mission select dropdown box in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
-        self.mission_comboBox = QComboBox(self)
-        self.mission_comboBox.setGeometry(165+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
-        self.mission_comboBox.addItems(['All','Kepler','K2','TESS'
-                                    ])
-        self.mission_comboBox.setStyleSheet("""
-                                QComboBox {
-                                    border: 3px solid gray;
-                                    border-radius: 5px;
-                                    padding: 1px 18px 1px 3px;
-                                    min-width: 4em;
-                                }
+        # self.mission_comboBox = QComboBox(self)
+        # self.mission_comboBox.setGeometry(220+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
+        # self.mission_comboBox.addItems(['All','Kepler','K2','TESS'
+        #                             ])
+        # self.mission_comboBox.setStyleSheet("""
+        #                         QComboBox {
+        #                             border: 3px solid gray;
+        #                             border-radius: 5px;
+        #                             padding: 1px 18px 1px 3px;
+        #                             min-width: 4em;
+        #                         }
+        #                         """)
+        # --------------------------------------------------------------------------
+
+        # Search button for target search in the Exo-Planet Detection screen
+        # --------------------------------------------------------------------------
+        self.target_search_btn = QPushButton(self)
+        self.target_search_btn.setFont(QFont(app_font,15))
+        self.target_search_btn.setIcon(PySide6.QtGui.QIcon(os.path.join(sys.path[0],'Images/refresh.png')))
+        self.target_search_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
                                 """)
+        self.target_search_btn.setGeometry(165+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
+        self.target_search_btn.clicked.connect(self.search_clicked)
         # --------------------------------------------------------------------------
 
         # Search button for target search in the Exo-Planet Detection screen
@@ -121,7 +140,7 @@ class Component(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.target_search_btn.setGeometry(260+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
+        self.target_search_btn.setGeometry(220+cmp_2_x_offset,55+cmp_2_y_offset,50,30)
         self.target_search_btn.clicked.connect(self.search_clicked)
         # --------------------------------------------------------------------------
 
@@ -139,7 +158,7 @@ class Component(QWidget):
                                     color: #000000
                                     }
                                 """)
-        self.advanced_search_btn.setGeometry(315+cmp_2_x_offset,55+cmp_2_y_offset,120,30)
+        self.advanced_search_btn.setGeometry(275+cmp_2_x_offset,55+cmp_2_y_offset,120,30)
         self.advanced_search_btn.clicked.connect(self.adv_clicked)
 
 

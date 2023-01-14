@@ -91,6 +91,22 @@ class Component(QWidget):
                                     }
                                 """)
         self.detection_btn.clicked.connect(self.detection_clicked)
+
+        # Button to select False Positive Analaysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.detection_btn = QPushButton("False Positive Analysis",self)
+        self.detection_btn.setGeometry(10+cmp_7_x_offset, 70+ cmp_7_y_offset, 150, 20)
+        self.detection_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.detection_btn.clicked.connect(self.detection_clicked)
         
         
        

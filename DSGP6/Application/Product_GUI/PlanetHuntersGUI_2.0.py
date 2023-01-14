@@ -492,6 +492,64 @@ class PlotArea(QScrollArea):
         # --------------------------------------------------------------------------
         if len(lightcurve) > 0:
             self.sc.draw()
+    
+    def plotTargetPixelFile(self):
+        try:
+            search_result = lk.search_targetpixelfile(target_search_id,author = lightcurve.author)
+            tpf = search_result[int(select_input)].download()
+
+            # plot the data ('pipeline' command tells it to plot the red aperture)
+            self.sc.axes.cla()
+            tpf.plot(aperture_mask='pipeline',ax=self.sc.axes)
+            self.sc.draw()
+        except:
+            print("Target pixel file is not available for this particular lightcurve")
+    
+    def plotLightCurve(self):
+        try:
+            sector_data = lk.search_lightcurve(target_search_id,author = lightcurve.author)
+            lc = sector_data[int(select_input)].download()
+            self.sc.axes.cla()
+            lc.plot(linewidth = 0, marker = '.', color = 'black', alpha = 0.3,ax=self.sc.axes)
+            self.sc.draw()
+        except:
+            pass
+    
+    def backgroundFlux(self):
+        try:
+            sector_data = lk.search_lightcurve(target_search_id,author = lightcurve.author)
+            lc = sector_data[int(select_input)].download()
+            self.sc.axes.cla()
+            self.sc.axes.plot(lc.time.value, lc.sap_bkg.value, color = 'blue', lw = 0, marker = '.', ms = 1)
+            self.sc.axes.set_ylabel("Background flux") # label the axes
+            self.sc.axes.set_xlabel("Time (TJD)")
+            self.sc.draw()
+        except:
+            pass
+    
+    def backgroundFluxAtTransitEvent(self):
+        try:
+            sector_data = lk.search_lightcurve(target_search_id,author = lightcurve.author)
+            lc = sector_data[int(select_input)].download()
+            transit_time = bls_transit # variable. time of transit event 
+
+            # generate a mask so that we only see the times around the transit event
+            # in this example we are looking at 2 days on either side of the event but you can CHANGE THIS depending on the signal.
+            transit_mask = (lc.time.value > transit_time - 2) & (lc.time.value < transit_time + 2)
+
+            self.sc.axes.cla()
+
+            # mask the date (both the time and the flux using the mask we just generated)
+            self.sc.axes.plot(lc.time.value[transit_mask], lc.sap_bkg.value[transit_mask], color = 'blue', lw = 0, marker = '.', ms = 1)
+
+            self.sc.axes.axvline(transit_time) # axv line is similar to our axh line...now its vertical only
+
+            self.sc.axes.set_ylabel("Background flux") 
+            self.sc.axes.set_xlabel("Time (TJD)")
+            self.sc.draw()
+        except:
+            pass
+
             
 # Used to create a scrollable text field to show search results
 # --------------------------------------------------------------------------
@@ -605,7 +663,9 @@ class ExoDetection(QWidget):
         self.cmp_12_create(-160,0)
         self.cmp_12_visibility(True)
 
-
+        # Component set 15
+        self.cmp_15_create(620,490)
+        self.cmp_15_visibility(True)
 
         try:
             self.target_search_input.setText(target_search_id)
@@ -1510,23 +1570,141 @@ class ExoDetection(QWidget):
                                     }
                                 """)
         self.detection_btn.clicked.connect(self.detection_clicked)
+    
+    # Button to select False Positive Analaysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.falsePositive_btn = QPushButton("False Positive Analysis",self)
+        self.falsePositive_btn.setGeometry(10+cmp_7_x_offset, 70+ cmp_7_y_offset, 150, 20)
+        self.falsePositive_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.falsePositive_btn.clicked.connect(self.falsePositiveClicked)
 
     # Sector button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def sector_clicked(self):
+        self.falsePositive_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.detection_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.sector_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
         self.cmp_1_visibility(False)
         self.cmp_4_visibility(False)
         self.cmp_12_visibility(True)
+        self.cmp_15_visibility(True)
 
     # Detection button click function in the Exo-Planet Detection screen
     # --------------------------------------------------------------------------
     def detection_clicked(self):
+        self.falsePositive_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.detection_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.sector_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
         self.cmp_1_visibility(True)
+        self.cmp_4_visibility(False)
         self.cmp_12_visibility(False)
-   
+        self.cmp_15_visibility(True)
+    
+    # False Positive button click function in the Exo-Planet Detection screen
+    # --------------------------------------------------------------------------
+    def falsePositiveClicked(self):
+        self.falsePositive_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_alt_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.detection_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.sector_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.cmp_12_visibility(True)
+        self.cmp_4_visibility(True)
+        self.cmp_1_visibility(True)
+        self.cmp_15_visibility(False)
+
     def cmp_7_visibility(self,bool):
         self.sector_btn.setHidden(bool)
-        self.detection_btn.setHidden(bool)    
+        self.detection_btn.setHidden(bool)  
+        self.falsePositive_btn.setHidden(bool)  
     #-------------------------------------------------------------------------------
 
     # Component 8
@@ -1746,9 +1924,9 @@ class ExoDetection(QWidget):
         
         # Label to show "BLS Analysis" for plots in Exo-Detection Screen
         # --------------------------------------------------------------------------
-        self.bls_label = QLabel("BLS Analysis" , self)
-        self.bls_label.setGeometry(920+ cmp_12_x_offset, 500+ cmp_12_y_offset, 150, 20)
-        self.bls_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        self.bls_analysis_label = QLabel("BLS Analysis" , self)
+        self.bls_analysis_label.setGeometry(920+ cmp_12_x_offset, 500+ cmp_12_y_offset, 150, 20)
+        self.bls_analysis_label.setStyleSheet("color:#" + button_hover_hex + ";")
         # --------------------------------------------------------------------------
 
         # Label to show "Period" for BLS Analysis in Exo-Detection Screen
@@ -1865,6 +2043,7 @@ class ExoDetection(QWidget):
         # --------------------------------------------------------------------------
     
     def cmp_12_visibility(self,bool):
+        self.bls_analysis_label.setHidden(bool)
         self.bls_label.setHidden(bool)
         self.bls_period_label.setHidden(bool)
         self.bls_fold_plot_btn.setHidden(bool)
@@ -2106,6 +2285,148 @@ class ExoDetection(QWidget):
                 self.ml_label.setText("Not likely to be an exoplanet")
         else:
             self.ml_label.setText("Must be a Pro User for \nML Prediction")
+    
+    def cmp_15_create(self,cmp_7_x_offset,cmp_7_y_offset):
+
+        # Label to show "Plot Target Pixel File" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.tp_label = QLabel("Plot Target Pixel File" , self)
+        self.tp_label.setGeometry(20 + cmp_7_x_offset, 10 + cmp_7_y_offset, 150, 20)
+        self.tp_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Button to select Sector Analysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.tpImage_btn = QPushButton("Plot TP Image",self)
+        self.tpImage_btn.setGeometry(10+cmp_7_x_offset,40+ cmp_7_y_offset, 150, 20)
+        self.tpImage_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.tpImage_btn.clicked.connect(self.plotTP)
+        # --------------------------------------------------------------------------
+
+        # Label to show "Plot Light Curve" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.lc_label = QLabel("Plot Light Curve" , self)
+        self.lc_label.setGeometry(180 + cmp_7_x_offset, 10 + cmp_7_y_offset, 150, 20)
+        self.lc_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Button to select Exoplanet Detection in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.lc_btn = QPushButton("Plot Light Curve",self)
+        self.lc_btn.setGeometry(170+cmp_7_x_offset, 40+ cmp_7_y_offset, 150, 20)
+        self.lc_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.lc_btn.clicked.connect(self.plotLC)
+
+        # Label to show "Plot Background Flux" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bf_label = QLabel("Plot Background Flux" , self)
+        self.bf_label.setGeometry(340 + cmp_7_x_offset, 10 + cmp_7_y_offset, 150, 20)
+        self.bf_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Button to select False Positive Analaysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bf_btn = QPushButton("Background Flux",self)
+        self.bf_btn.setGeometry(330+cmp_7_x_offset, 40+ cmp_7_y_offset, 150, 20)
+        self.bf_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bf_btn.clicked.connect(self.plotBF)
+
+        # Label to show "Plot Background Flux" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bft_label = QLabel("Plot Background Flux At \nTransit" , self)
+        self.bft_label.setGeometry(500 + cmp_7_x_offset, -5 + cmp_7_y_offset, 150, 50)
+        self.bft_label.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        # Label to show "Transit Time" for plots in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.transitTimeLabel = QLabel("Transit Time" , self)
+        self.transitTimeLabel.setGeometry(500 + cmp_7_x_offset, 35 + cmp_7_y_offset, 150, 50)
+        self.transitTimeLabel.setStyleSheet("color:#" + button_hover_hex + ";")
+        # --------------------------------------------------------------------------
+
+        #  Input Transit Time
+        # --------------------------------------------------------------------------
+        self.transitTime_input = QLineEdit(self)
+        self.transitTime_input.setFont(QFont(app_font,15))
+        self.transitTime_input.setPlaceholderText(" eg: 1518.2 ")
+        self.transitTime_input.setStyleSheet("""
+                                QLineEdit {
+                                    border-radius:10px;
+                                    background-color: #ffffff;
+                                    color: #000000;
+                                    }
+                                """)
+        self.transitTime_input.setGeometry(580+ cmp_7_x_offset,50+ cmp_7_y_offset,80,20)
+        self.transitTime_input.setAlignment(Qt.AlignCenter)
+        # --------------------------------------------------------------------------
+
+        # Button to select False Positive Analaysis in Exo-Detection Screen
+        # --------------------------------------------------------------------------
+        self.bft_btn = QPushButton("Background Flux At Transit",self)
+        self.bft_btn.setGeometry(490+cmp_7_x_offset, 80+ cmp_7_y_offset, 170, 20)
+        self.bft_btn.setStyleSheet("""
+                                QPushButton {
+                                    border-radius:10px;
+                                    background-color: #""" + button_color_hex + """;
+                                    }
+                                QPushButton:hover {
+                                    background-color: #""" + button_hover_hex + """;
+                                    color: #000000
+                                    }
+                                """)
+        self.bft_btn.clicked.connect(self.plotBFT)
+    
+    def plotTP(self):
+        self.target_plot.plotTargetPixelFile()
+
+    def plotLC(self):
+        self.target_plot.plotLightCurve()
+    
+    def plotBF(self):
+        self.target_plot.backgroundFlux()
+    
+    def plotBFT(self):
+        self.target_plot.backgroundFluxAtTransitEvent()
+
+    def cmp_15_visibility(self,bool):
+        self.transitTime_input.setHidden(bool)
+        self.transitTimeLabel.setHidden(bool)
+        self.lc_label.setHidden(bool)
+        self.tp_label.setHidden(bool)
+        self.bf_label.setHidden(bool)
+        self.bft_label.setHidden(bool)
+        self.bf_btn.setHidden(bool)
+        self.bft_btn.setHidden(bool)
+        self.tpImage_btn.setHidden(bool)
+        self.lc_btn.setHidden(bool)
 
 # Class for sign up screen
 # --------------------------------------------------------------------------
