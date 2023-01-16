@@ -968,7 +968,9 @@ class ExoDetection(QWidget):
                                     border-radius: 5px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 4em;
+                                    background-color: white;
                                 }
+                                QListView {background-color: white;}
                                 """)
         # --------------------------------------------------------------------------
 
@@ -1229,7 +1231,9 @@ class ExoDetection(QWidget):
                                     border-radius: 3px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 6em;
+                                    background-color: white;
                                 }
+                                QListView {background-color: white;}
                                 """)
         self.adv_select_comboBox.activated.connect(self.adv_search_parameter_select_clicked)
         # --------------------------------------------------------------------------
@@ -2653,7 +2657,9 @@ class Habitability(QWidget):
                                     border-radius: 5px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 4em;
+                                    background-color: white;
                                 }
+                                QListView {background-color: white;}
                                 """)
         # --------------------------------------------------------------------------
 
@@ -2859,7 +2865,9 @@ class Habitability(QWidget):
                                     border-radius: 3px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 6em;
+                                    background-color: white;
                                 }
+                                QListView {background-color: white;}
                                 """)
         self.adv_select_comboBox.activated.connect(self.adv_search_parameter_select_clicked)
         # --------------------------------------------------------------------------
@@ -4050,7 +4058,8 @@ class Login(QWidget):
 # Application start
 # -------------------------------------------------------------------------- 
 app = QApplication([])
-app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;}") # Setting all labels in the app to white color
+app.setWindowIcon(QIcon(r'Application\Product_GUI\Images\icon.png'))
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QCheckBox {color: white}") # Setting all labels in the app to white color
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
