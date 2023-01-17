@@ -25,6 +25,7 @@ from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+import ctypes
 
 # Credentitials for firebase authentication
 # --------------------------------------------------------------------------
@@ -147,6 +148,7 @@ error = ""
 
 # Application font
 # --------------------------------------------------------------------------
+# app_font = None
 app_font = "Arial"
 # --------------------------------------------------------------------------
 
@@ -943,7 +945,7 @@ class ExoDetection(QWidget):
         # Target ID input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont(app_font,15))
+        self.target_search_input.setFont(QFont(app_font,10))
         self.target_search_input.setPlaceholderText("eg: TIC 42173628")
         self.target_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -968,9 +970,9 @@ class ExoDetection(QWidget):
                                     border-radius: 5px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 4em;
-                                    background-color: white;
+                                    color: white;
                                 }
-                                QListView {background-color: white;}
+                                QListView {color: white;}
                                 """)
         # --------------------------------------------------------------------------
 
@@ -996,7 +998,7 @@ class ExoDetection(QWidget):
         # Advanced search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.advanced_search_btn = QPushButton("Filter Search",self)
-        self.advanced_search_btn.setFont(QFont(app_font,15))
+        self.advanced_search_btn.setFont(QFont(app_font,13))
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1129,18 +1131,19 @@ class ExoDetection(QWidget):
             self.pfp_pixmap.loadFromData(avatar)
             self.pfp_label.setPixmap(self.pfp_pixmap.scaled(30,30,Qt.KeepAspectRatio))
             self.pfp_label.setGeometry(10+ cmp_3_x_offset,10+ cmp_3_y_offset,30,30)
-            welcome_txt = "Welcome,\n" + username
+            welcome_txt = "Welcome,\n" + username 
         except:
             self.pfp_label.setText(":(")
-            self.pfp_label.setFont(QFont(app_font,25))
+            self.pfp_label.setFont(QFont(app_font,23))
             self.pfp_label.setGeometry(20+ cmp_3_x_offset,8+ cmp_3_y_offset,30,30)
             welcome_txt = "OOPS!\n" + "Check your connection!"
         # --------------------------------------------------------------------------
 
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
+        # self.welcome_label = QLabel("<font size= '1'>{}</font>".format(welcome_txt),self)
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont(app_font,12))
+        self.welcome_label.setFont(QFont(app_font,10))
         self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
        
     # Generate url for profile picture for Exo-Planet Detection screen
@@ -1231,9 +1234,9 @@ class ExoDetection(QWidget):
                                     border-radius: 3px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 6em;
-                                    background-color: white;
+                                    color: white;
                                 }
-                                QListView {background-color: white;}
+                                QListView {color: white;}
                                 """)
         self.adv_select_comboBox.activated.connect(self.adv_search_parameter_select_clicked)
         # --------------------------------------------------------------------------
@@ -1250,7 +1253,7 @@ class ExoDetection(QWidget):
         # Advanced search parameter input value in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont(app_font,15))
+        self.adv_search_input.setFont(QFont(app_font,13))
         self.adv_search_input.setPlaceholderText("Enter value")
         self.adv_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -1348,7 +1351,7 @@ class ExoDetection(QWidget):
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_screen_btn = QPushButton("Back To Target Search",self)
-        self.target_screen_btn.setFont(QFont(app_font,15))
+        self.target_screen_btn.setFont(QFont(app_font,13))
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -1541,7 +1544,7 @@ class ExoDetection(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont(app_font,12))
+        self.select_label.setFont(QFont(app_font,8))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10+ cmp_8_x_offset,10+cmp_8_y_offset,100,10)
         # --------------------------------------------------------------------------
@@ -1549,7 +1552,7 @@ class ExoDetection(QWidget):
         # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont(app_font,15))
+        self.select_input.setFont(QFont(app_font,10))
         self.select_input.setPlaceholderText(" eg: 0 or 1 ")
         self.select_input.setStyleSheet("""
                                 QLineEdit {
@@ -1654,7 +1657,7 @@ class ExoDetection(QWidget):
             self.thread.start()
             self.thread.finished.connect(self.update_plot)
 
-            self.search_progressBar.setGeometry(160,370,144,30)
+            self.search_progressBar.setGeometry(160,370,144,10)
             self.search_progressBar.setHidden(False)
             self.validation_label.setGeometry(160,387,300,30)
             self.validation_label.setText("Downloading Lightcurve")
@@ -2419,7 +2422,7 @@ class Select(QWidget):
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont(app_font,12))
+        self.welcome_label.setFont(QFont(app_font,10))
         self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
         # --------------------------------------------------------------------------
         ###########################################################################
@@ -2427,14 +2430,14 @@ class Select(QWidget):
         # Habitability title in select screen
         # --------------------------------------------------------------------------
         self.hab_title = QLabel("Habitability Detection",self)
-        self.hab_title.setFont(QFont(app_font,20))
+        self.hab_title.setFont(QFont(app_font,18))
         self.hab_title.setGeometry((width/2)-150,60,300,30)
         # --------------------------------------------------------------------------
         
         # Habitability description in select screen
         # --------------------------------------------------------------------------
         self.hab_desc = QLabel("Detect habitability using bls results calculated during\ndetection.Radius,Semi-Major-Axis and Equilibrium \ntemperatures can be calculated for different\nalbedo values",self)
-        self.hab_desc.setFont(QFont(app_font,12))
+        self.hab_desc.setFont(QFont(app_font,10))
         self.hab_desc.setGeometry((width/2)-150,90,300,110)
         # --------------------------------------------------------------------------
         
@@ -2458,14 +2461,14 @@ class Select(QWidget):
         # Exo-Planet detection title in select screen
         # --------------------------------------------------------------------------
         self.exo_title = QLabel("Exoplanet Detection",self)
-        self.exo_title.setFont(QFont(app_font,20))
+        self.exo_title.setFont(QFont(app_font,18))
         self.exo_title.setGeometry((width/2)-150,240,300,30)
         # --------------------------------------------------------------------------
         
         # Exo-Planet detecttion description in select screen
         # --------------------------------------------------------------------------
         self.exo_desc = QLabel("Light-curves,binned and \nfolded graphs can be generated and the BLS\nanalysis can be conducted, and results from BLS can\nbe passed to an ML Prediction Model to \ndetect if it is an exoplanet or a false positive.",self)
-        self.exo_desc.setFont(QFont(app_font,12))
+        self.exo_desc.setFont(QFont(app_font,10))
         self.exo_desc.setGeometry((width/2)-150,270,300,110)
         # --------------------------------------------------------------------------
 
@@ -2632,7 +2635,7 @@ class Habitability(QWidget):
         # Target ID input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_search_input = QLineEdit(self)
-        self.target_search_input.setFont(QFont(app_font,15))
+        self.target_search_input.setFont(QFont(app_font,10))
         self.target_search_input.setPlaceholderText("eg: TIC 42173628")
         self.target_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -2657,9 +2660,9 @@ class Habitability(QWidget):
                                     border-radius: 5px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 4em;
-                                    background-color: white;
+                                    color: white;
                                 }
-                                QListView {background-color: white;}
+                                QListView {color: white;}
                                 """)
         # --------------------------------------------------------------------------
 
@@ -2685,7 +2688,7 @@ class Habitability(QWidget):
         # Advanced search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.advanced_search_btn = QPushButton("Filter Search",self)
-        self.advanced_search_btn.setFont(QFont(app_font,15))
+        self.advanced_search_btn.setFont(QFont(app_font,13))
         self.advanced_search_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -2830,7 +2833,7 @@ class Habitability(QWidget):
         # Welcome label to welcome the user in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.welcome_label = QLabel(welcome_txt,self)
-        self.welcome_label.setFont(QFont(app_font,12))
+        self.welcome_label.setFont(QFont(app_font,10))
         self.welcome_label.setGeometry(50+ cmp_3_x_offset,0+ cmp_3_y_offset,300,50)
        
     # Generate url for profile picture for Habitability screen
@@ -2865,9 +2868,9 @@ class Habitability(QWidget):
                                     border-radius: 3px;
                                     padding: 1px 18px 1px 3px;
                                     min-width: 6em;
-                                    background-color: white;
+                                    color: white;
                                 }
-                                QListView {background-color: white;}
+                                QListView {color: white;}
                                 """)
         self.adv_select_comboBox.activated.connect(self.adv_search_parameter_select_clicked)
         # --------------------------------------------------------------------------
@@ -2884,7 +2887,7 @@ class Habitability(QWidget):
         # Advanced search parameter input value in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.adv_search_input = QLineEdit(self)
-        self.adv_search_input.setFont(QFont(app_font,15))
+        self.adv_search_input.setFont(QFont(app_font,13))
         self.adv_search_input.setPlaceholderText("Enter value")
         self.adv_search_input.setStyleSheet("""
                                 QLineEdit {
@@ -2982,7 +2985,7 @@ class Habitability(QWidget):
         # Target search button for advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.target_screen_btn = QPushButton("Back To Habitability Search",self)
-        self.target_screen_btn.setFont(QFont(app_font,15))
+        self.target_screen_btn.setFont(QFont(app_font,11))
         self.target_screen_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -3120,7 +3123,7 @@ class Habitability(QWidget):
         # Select from table label for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_label = QLabel("Select from table",self)
-        self.select_label.setFont(QFont(app_font,12))
+        self.select_label.setFont(QFont(app_font,8))
         self.select_label.setStyleSheet("color: #ffffff")
         self.select_label.setGeometry(10+ cmp_8_x_offset,10+cmp_8_y_offset,100,10)
         # --------------------------------------------------------------------------
@@ -3128,7 +3131,7 @@ class Habitability(QWidget):
         # Select value input textbox for target/advanced search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.select_input = QLineEdit(self)
-        self.select_input.setFont(QFont(app_font,15))
+        self.select_input.setFont(QFont(app_font,10))
         self.select_input.setPlaceholderText(" eg: 0 or 1 ")
         self.select_input.setStyleSheet("""
                                 QLineEdit {
@@ -3233,7 +3236,7 @@ class Habitability(QWidget):
             self.thread.start()
             self.thread.finished.connect(self.update_plot)
 
-            self.search_progressBar.setGeometry(160,370,144,30)
+            self.search_progressBar.setGeometry(160,370,144,10)
             self.search_progressBar.setHidden(False)
             self.validation_label.setGeometry(160,387,300,30)
             self.validation_label.setText("Downloading Lightcurve")
@@ -3296,7 +3299,7 @@ class Habitability(QWidget):
         # period input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.period_input = QLineEdit(self)
-        self.period_input.setFont(QFont(app_font,15))
+        self.period_input.setFont(QFont(app_font,10))
         self.period_input.setPlaceholderText("eg: 2.3467877")
         self.period_input.setStyleSheet("""
                                 QLineEdit {
@@ -3317,7 +3320,7 @@ class Habitability(QWidget):
         # period input textbox in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.epoch_input = QLineEdit(self)
-        self.epoch_input.setFont(QFont(app_font,15))
+        self.epoch_input.setFont(QFont(app_font,10))
         self.epoch_input.setPlaceholderText("eg: 170.456")
         self.epoch_input.setStyleSheet("""
                                 QLineEdit {
@@ -3332,7 +3335,7 @@ class Habitability(QWidget):
         # phase fold search button for target search in the Exo-Planet Detection screen
         # --------------------------------------------------------------------------
         self.phase_fold_btn = QPushButton("Phase Fold",self)
-        self.phase_fold_btn.setFont(QFont(app_font,15))
+        self.phase_fold_btn.setFont(QFont(app_font,13))
         self.phase_fold_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -3515,7 +3518,7 @@ class Habitability(QWidget):
         self.star_eff_input.setAlignment(Qt.AlignCenter)
 
         self.calc_radius_btn = QPushButton('Generate Results',self)
-        self.calc_radius_btn.setFont(QFont(app_font,15))
+        self.calc_radius_btn.setFont(QFont(app_font,13))
         self.calc_radius_btn.setStyleSheet("""
                                 QPushButton {
                                     border-radius:10px;
@@ -3783,6 +3786,7 @@ class Login(QWidget):
         self.setFixedWidth(width)
         self.create_widgets()
         self.setStyleSheet("background-color: #" + background_color_hex + ";")
+        # self.setStyleSheet("background-color: #" + background_color_hex + ";")
 
         # Decrypting saved user info and display in the login screen if user has selected remember me previously
         # --------------------------------------------------------------------------
@@ -3829,7 +3833,7 @@ class Login(QWidget):
         # --------------------------------------------------------------------------
 
         if (sign_up == False):
-            self.welcome_msg = QLabel("Log In to Planet Hunters",self)
+            self.welcome_msg = QLabel("<font size='1'>Log In to Planet Hunters</font>",self)
             self.welcome_msg.setAlignment(Qt.AlignCenter)
             self.welcome_msg.setGeometry((width/2)-150,110,300,30)
             self.welcome_msg.setStyleSheet("color: white;")
@@ -3941,7 +3945,7 @@ class Login(QWidget):
         self.progress_bar_login = QProgressBar(self)
         self.progress_bar_login.setMaximum(0)
         self.progress_bar_login.setMinimum(0)
-        self.progress_bar_login.setGeometry((width/2)-150,390,300,10)
+        self.progress_bar_login.setGeometry((width/2)-150,390,334,10)
         self.progress_bar_login.setHidden(True)
         # --------------------------------------------------------------------------
 
@@ -4058,8 +4062,13 @@ class Login(QWidget):
 # Application start
 # -------------------------------------------------------------------------- 
 app = QApplication([])
+
+# This is to tell Windows that it is merely hosting other applications and show the app icon  
+myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 app.setWindowIcon(QIcon(r'Application\Product_GUI\Images\icon.png'))
-app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QCheckBox {color: white}") # Setting all labels in the app to white color
+app.setStyleSheet("QLabel {color: white;} QLineEdit {color: white;} QRadioButton {color: white;} QCheckBox {color: white} QPushButton {color: white;} QToolButton {color: white;}") # Setting all labels in the app to white color
 pixmap = QPixmap(os.path.join(sys.path[0],"Images/logo.png"))
 splash = QSplashScreen(pixmap)
 splash.show()
