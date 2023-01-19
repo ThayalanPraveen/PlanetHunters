@@ -2066,12 +2066,6 @@ class ExoDetection(QWidget):
                 except:
                     break
             
-            with open(os.path.join(sys.path[0],'Models/RFM_G_model_pkl') , 'rb') as f:
-                global_model = pickle.load(f)
-
-            with open(os.path.join(sys.path[0],'Models/RFM_L_model_pkl') , 'rb') as f:
-                local_model = pickle.load(f)
-
             #-----------------------------------------
 
             for i in range(len(global_lc),17134):
@@ -2095,15 +2089,15 @@ class ExoDetection(QWidget):
                 local_lc.append(x)
 
         
-            g = global_model.predict([global_lc])
-            l = local_model.predict([local_lc])
+            myobj = {
+                'global': global_lc,
+                'local' : local_lc,
+             }
 
-            if g[0] ==1 and l[0] ==1 :
-                self.ml_label.setText("Very likely to be an exoplanet!")
-            elif g[0]==1 or l[0]==1 :
-                self.ml_label.setText("Likely to be an exoplanet transit,\nRequires further analysis to confirm")
-            else :
-                self.ml_label.setText("Not likely to be an exoplanet")
+            url = 'https://planethuntersmlapi.azurewebsites.net/predict'
+            x = requests.post(url, json = myobj)
+            response = json.loads(x.text)["result"]
+            self.ml_label.setText(response)
         else:
             self.ml_label.setText("Must be a Pro User for \nML Prediction")
 
